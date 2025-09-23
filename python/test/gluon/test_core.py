@@ -8,6 +8,8 @@ import triton.language as tl
 from triton._internal_testing import (
     is_ampere_or_newer,
     is_blackwell,
+    is_hip_gfx11,
+    is_hip_gfx12,
     is_hip_cdna3,
     is_hip_cdna4,
     is_hopper_or_newer,
@@ -202,19 +204,88 @@ def test_amd_direct_load_to_shared(use_buffer_load):
     assert 'vmcnt(0)' in pgm.asm['amdgcn']
 
 
+@pytest.mark.skipif(not (is_hip_gfx11() or is_hip_gfx12()), reason="Requires RDNA3 or RDNA4")
+@pytest.mark.parametrize("M, N, K", [(64, 64, 64)])
+@pytest.mark.parametrize("in_dtype", ['float16', 'bfloat16'])
+def test_amd_wmma(M, N, K, in_dtype):
+
+    @gluon.jit
+    def kernel(a_ptr, b_ptr, c_ptr,  #
+               stride_am, stride_ak,  #
+               stride_bk, stride_bn,  #
+               stride_cm, stride_cn,  #
+               BLOCK_SIZE_M: ttgl.constexpr,  #
+               BLOCK_SIZE_N: ttgl.constexpr,  #
+               BLOCK_SIZE_K: ttgl.constexpr,  #
+               BLOCKED_LAYOUT: ttgl.constexpr,  #
+               WMMA_LAYOUT: ttgl.constexpr,  #
+               K_WIDTH: ttgl.constexpr):
+        offs_am = ttgl.arange(0, BLOCK_SIZE_M, layout=ttgl.SliceLayout(1, BLOCKED_LAYOUT))
+        offs_bn = ttgl.arange(0, BLOCK_SIZE_N, layout=ttgl.SliceLayout(0, BLOCKED_LAYOUT))
+
+        offs_ak = ttgl.arange(0, BLOCK_SIZE_K, layout=ttgl.SliceLayout(0, BLOCKED_LAYOUT))
+        offs_bk = ttgl.arange(0, BLOCK_SIZE_K, layout=ttgl.SliceLayout(1, BLOCKED_LAYOUT))
+
+        offs_a = offs_am[:, None] * stride_am + offs_ak[None, :] * stride_ak
+        offs_b = offs_bk[:, None] * stride_bk + offs_bn[None, :] * stride_bn
+
+        a = ttgl.load(a_ptr + offs_a)
+        b = ttgl.load(b_ptr + offs_b)
+
+        a = ttgl.convert_layout(a, layout=ttgl.DotOperandLayout(0, WMMA_LAYOUT, K_WIDTH))
+        b = ttgl.convert_layout(b, layout=ttgl.DotOperandLayout(1, WMMA_LAYOUT, K_WIDTH))
+
+        acc = ttgl.zeros([BLOCK_SIZE_M, BLOCK_SIZE_N], ttgl.float32, WMMA_LAYOUT)
+        if WMMA_LAYOUT.version == 1:
+            c = ttgl.amd.rdna3.wmma(a, b, acc)
+        else:
+            ttgl.static_assert(WMMA_LAYOUT.version == 2, "WMMA_LAYOUT.version must be 1 or 2")
+            c = ttgl.amd.rdna4.wmma(a, b, acc)
+        c = c.to(a_ptr.dtype.element_ty)
+
+        offs_cm = ttgl.arange(0, BLOCK_SIZE_M, layout=ttgl.SliceLayout(1, WMMA_LAYOUT))
+        offs_cn = ttgl.arange(0, BLOCK_SIZE_N, layout=ttgl.SliceLayout(0, WMMA_LAYOUT))
+        offs_c = offs_cm[:, None] * stride_cm + offs_cn[None, :] * stride_cn
+        ttgl.store(c_ptr + offs_c, c)
+
+    elem_type = torch.float16 if in_dtype == 'float16' else torch.bfloat16
+    a = torch.randn((M, K), device='cuda', dtype=elem_type)
+    b = torch.randn((K, N), device='cuda', dtype=elem_type)
+    c = torch.empty((M, N), device=a.device, dtype=elem_type)
+
+    blocked = ttgl.BlockedLayout([1, 8], [4, 8], [4, 1], [1, 0])
+    wmma_version = 1 if is_hip_gfx11() else 2
+    k_width = 16 if is_hip_gfx11() else 8
+    wmma = ttgl.amd.AMDWMMALayout(wmma_version, True, [2, 2])
+    kernel[1, 1](a, b, c, a.stride(0), a.stride(1), b.stride(0), b.stride(1), c.stride(0), c.stride(1), BLOCK_SIZE_M=M,
+                 BLOCK_SIZE_N=N, BLOCK_SIZE_K=K, BLOCKED_LAYOUT=blocked, WMMA_LAYOUT=wmma, K_WIDTH=k_width, num_warps=4)
+
+    ref = torch.matmul(a, b)
+    triton_output = c
+    torch.testing.assert_close(ref, triton_output)
+
+
+@pytest.mark.skipif(not (is_hip_cdna3() or is_hip_cdna4()), reason="Requires CDNA3 or CDNA4")
 @pytest.mark.parametrize("M, N, K", [(32, 32, 16), (16, 16, 32)])
 @pytest.mark.parametrize("in_dtype", ['float16', 'bfloat16'])
 @pytest.mark.parametrize("num_warps", [4, 8])
 @pytest.mark.parametrize("cdna_version", [3, 4])
 def test_amd_mfma(M, N, K, in_dtype, num_warps, cdna_version):
+    if is_hip_cdna3() and cdna_version != 3:
+        pytest.skip("On CDNA3 target, skip if mfma version is not 3")
+
+    if is_hip_cdna4() and cdna_version != 4:
+        pytest.skip("On CDNA4 target, skip if mfma version is not 4")
 
     @gluon.jit
-    def kernel(a_ptr, b_ptr, c_ptr, stride_am, stride_ak,  #
+    def kernel(a_ptr, b_ptr, c_ptr,  #
+               stride_am, stride_ak,  #
                stride_bk, stride_bn,  #
-               stride_cm, stride_cn, BLOCK_SIZE_M: ttgl.constexpr, BLOCK_SIZE_N: ttgl.constexpr,
-               BLOCK_SIZE_K: ttgl.constexpr, blocked: ttgl.constexpr, mfma_layout: ttgl.constexpr):
-        dot_a_layout: ttgl.constexpr = ttgl.DotOperandLayout(operand_index=0, parent=mfma_layout, k_width=8)
-        dot_b_layout: ttgl.constexpr = ttgl.DotOperandLayout(operand_index=1, parent=mfma_layout, k_width=8)
+               stride_cm, stride_cn,  #
+               BLOCK_SIZE_M: ttgl.constexpr, BLOCK_SIZE_N: ttgl.constexpr, BLOCK_SIZE_K: ttgl.constexpr,
+               blocked: ttgl.constexpr, k_width: ttgl.constexpr, mfma_layout: ttgl.constexpr):
+        dot_a_layout: ttgl.constexpr = ttgl.DotOperandLayout(operand_index=0, parent=mfma_layout, k_width=k_width)
+        dot_b_layout: ttgl.constexpr = ttgl.DotOperandLayout(operand_index=1, parent=mfma_layout, k_width=k_width)
 
         offs_am = ttgl.arange(0, BLOCK_SIZE_M, layout=ttgl.SliceLayout(1, blocked))
         offs_bn = ttgl.arange(0, BLOCK_SIZE_N, layout=ttgl.SliceLayout(0, blocked))
@@ -238,27 +309,26 @@ def test_amd_mfma(M, N, K, in_dtype, num_warps, cdna_version):
         offs_c = offs_cm[:, None] * stride_cm + offs_cn[None, :] * stride_cn
         ttgl.amd.cdna3.buffer_store(stored_value=c, ptr=c_ptr, offsets=offs_c)
 
-    if not is_hip_cdna4() and not is_hip_cdna3():
-        pytest.skip("mfma quires target to be CDNA3 or CDNA4")
-
-    if is_hip_cdna3() and cdna_version != 3:
-        pytest.skip("On CDNA3 target, skip if mfma version is not 3")
-
-    if is_hip_cdna4() and cdna_version != 4:
-        pytest.skip("On CDNA4 target, skip if mfma version is not 4")
-
     elem_type = torch.float16 if in_dtype == 'float16' else torch.bfloat16
     a = torch.randn((M, K), device='cuda', dtype=elem_type) - 0.5
     b = torch.randn((K, N), device='cuda', dtype=elem_type) - 0.5
     c = torch.empty((M, N), device=a.device, dtype=elem_type)
     nonkdim: ttgl.constexpr = 32
+    kdim: ttgl.constexpr = 8 if cdna_version == 3 else 16
+    k_width: ttgl.constexpr = 4 if cdna_version == 3 else 8
     blocked: ttgl.constexpr = ttgl.BlockedLayout(size_per_thread=[4, 4], threads_per_warp=[4, 16],
                                                  warps_per_cta=[num_warps, 1], order=[1, 0])
-    mfma_layout: ttgl.constexpr = ttgl.amd.AMDMFMALayout(version=cdna_version, instr_shape=[nonkdim, nonkdim],
+    mfma_layout: ttgl.constexpr = ttgl.amd.AMDMFMALayout(version=cdna_version, instr_shape=[nonkdim, nonkdim, kdim],
                                                          transposed=True, warps_per_cta=[num_warps, 1])
 
-    kernel[1, 1](a, b, c, a.stride(0), a.stride(1), b.stride(0), b.stride(1), c.stride(0), c.stride(1), BLOCK_SIZE_M=M,
-                 BLOCK_SIZE_N=N, BLOCK_SIZE_K=K, blocked=blocked, mfma_layout=mfma_layout, num_warps=num_warps)
+    kernel[1, 1](
+        a, b, c,  #
+        a.stride(0), a.stride(1),  #
+        b.stride(0), b.stride(1),  #
+        c.stride(0), c.stride(1),  #
+        BLOCK_SIZE_M=M, BLOCK_SIZE_N=N, BLOCK_SIZE_K=K,  #
+        blocked=blocked, k_width=k_width, mfma_layout=mfma_layout,  #
+        num_warps=num_warps)
 
     ref = torch.matmul(a, b)
     triton_output = c
@@ -331,8 +401,8 @@ def test_amd_mfma_scaled(M, N, K, rhs_scale, mxfp_type, normal_type):
             reg_bases=[], lane_bases=[[1, 0], [2, 0], [4, 0], [8, 0], [0, 1], [0, 2]], warp_bases=[[16, 0], [0, 0]],
             block_bases=[], shape=[32, 4])
 
-        mfma_layout: ttgl.constexpr = ttgl.amd.AMDMFMALayout(version=4, warps_per_cta=[2, 2], tiles_per_warp=[1, 1],
-                                                             instr_shape=[16, 16], transposed=True)
+        mfma_layout: ttgl.constexpr = ttgl.amd.AMDMFMALayout(version=4, instr_shape=[16, 16, 128], transposed=True,
+                                                             warps_per_cta=[2, 2])
 
         zero = ttgl.zeros([BLOCK_M, BLOCK_N], dtype=ttgl.float32, layout=mfma_layout)
 
