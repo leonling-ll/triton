@@ -966,6 +966,9 @@ public:
 
   TensorValue scaleArg(PatternRewriter &rewriter, triton::DotScaledOp dotOp,
                        int opIdx, FloatType computeType) const override {
+    assert(targetInfo.getISAFamily() == AMD::ISAFamily::CDNA4 &&
+           "Only CDNA4 is supported for AMD scaleArg");
+
     TensorValue v = (opIdx == 0) ? dotOp.getA() : dotOp.getB();
     TensorValue scale = (opIdx == 0) ? dotOp.getAScale() : dotOp.getBScale();
     ScaleDotElemType elemType =
@@ -995,30 +998,11 @@ public:
     scale.getDefiningOp()->setAttr(AttrDecomposedDotScaledSource,
                                    BoolAttr::get(rewriter.getContext(), true));
 
-    Value reshapeScale;
-    if (targetInfo.getISAFamily() == AMD::ISAFamily::CDNA4) {
-      // 3) Cast scale to bf16 if CDNA4, broadcast it and convert the
-      // layout
-      FloatType bf16Type = rewriter.getBF16Type();
-      reshapeScale = extendAndBroadcastScale(
-          rewriter, dotOp, scale, bf16Type, scaleType16.clone(bf16Type), opIdx);
-    } else {
-      // On other architecture, the scale type is int8, required by hardware
-      // instruction so type should not be converted.
-      if (opIdx == 1) {
-        auto order = getTransposeOrder(rank);
-        scale = TransOp::create(rewriter, loc, scale, order);
-      }
-
-      reshapeScale = broadcastScale(
-          rewriter, dotOp, dotOp->getParentOfType<ModuleOp>(), scale, kDim);
-
-      auto newScaleType = RankedTensorType::get(
-          cast<RankedTensorType>(reshapeScale.getType()).getShape(),
-          scale.getType().getElementType(), vType.getEncoding());
-      reshapeScale = mlir::triton::gpu::ConvertLayoutOp::create(
-          rewriter, loc, newScaleType, reshapeScale);
-    }
+    // 3) Cast scale to bf16 if CDNA4, broadcast it and convert the
+    // layout
+    FloatType bf16Type = rewriter.getBF16Type();
+    Value reshapeScale = extendAndBroadcastScale(
+        rewriter, dotOp, scale, bf16Type, scaleType16.clone(bf16Type), opIdx);
 
     // 4) Upcast with scale
     TensorValue result;
@@ -1825,8 +1809,12 @@ struct TritonAMDGPUAccelerateMatmulPass
     case ISAFamily::CDNA3:
     case ISAFamily::CDNA2:
     case ISAFamily::CDNA1:
+      ttg::populateDecomposeScaledBlockedPatterns(mfmaPatterns, /*benefit=*/3);
       mfmaPatterns.add<::BlockedToMFMA, ::ScaledBlockedToMFMA>(
-          context, getMfmaVersion(isaFamily), matrixInstructionSize, kPack,
+          context, getMfmaVersion(isaFamily),
+          // mfmaPatterns.add<::BlockedToMFMA>(context,
+          // getMfmaVersion(isaFamily),
+          matrixInstructionSize, kPack,
           /*benefit=*/2);
       break;
     case ISAFamily::RDNA3:
