@@ -35,9 +35,11 @@ SmallVector<unsigned, 3> mmaVersionToInstrShape(int version,
 // Return true if the Load uses block pointer.
 bool isLoadFromTensorPtr(triton::LoadOp op);
 
-// Return an array of indices enumerating the elements of 'arr' in descending
-// order (so that result[i] is the index of the i-th largest element of 'arr')
-SmallVector<unsigned, 4> argSort(const SmallVector<int64_t> &arr);
+// Gets the order of a tensor from its contiguity. Places the dimensions with
+// the largest contiguity as the inner most dimension. If the contiguity is
+// all ones, returns the order {dim - 1, dim - 2, ..., 0}
+SmallVector<unsigned, 4>
+getOrderFromContiguity(const SmallVector<int64_t> &contiguity);
 
 // Return the operand used to access the memory in the operation
 Value getMemAccessPtr(Operation *op);
@@ -49,7 +51,8 @@ unsigned getElementBitWidth(RankedTensorType type);
 // along an axis with greatest continuity.
 unsigned
 getNumElementsPerThread(Operation *op, SmallVector<unsigned> order,
-                        triton::ModuleAxisInfoAnalysis &axisInfoAnalysis);
+                        triton::ModuleAxisInfoAnalysis &axisInfoAnalysis,
+                        SmallVector<int64_t> &shapePerCTA);
 
 // Returns whether the op is a "view op", i.e. doesn't move any data
 bool isView(Operation *op);

@@ -520,6 +520,22 @@ AMDMfmaEncodingAttr::toLinearLayout(ArrayRef<int64_t> shape) const {
   return combineCtaCgaWithShape(tileLayout, getCTALayout(), shape);
 }
 
+LinearLayout chooseWmmaCTALinearLayout(MLIRContext *ctx, unsigned rank,
+                                       ArrayRef<unsigned> warpsPerCTA,
+                                       ArrayRef<unsigned> tilesPerWarp) {
+  StringAttr kWarp = S("warp");
+  StringAttr kRegister = S("register");
+  auto dims = standardOutDimNames(ctx, rank);
+
+  auto order = getMatrixOrder(rank, /*rowMajor*/ true);
+  LinearLayout ret;
+  for (auto d : order) {
+    ret *= LinearLayout::identity1D(tilesPerWarp[d], kRegister, dims[d]);
+    ret *= LinearLayout::identity1D(warpsPerCTA[d], kWarp, dims[d]);
+  }
+  return ret.transposeOuts(dims);
+}
+
 LinearLayout chooseDotDsReadB64TrLayout(DotOperandEncodingAttr dotMfmaLayout,
                                         ArrayRef<int64_t> shape,
                                         int32_t elemBitWidth) {

@@ -90,9 +90,11 @@ bool isLoadFromTensorPtr(triton::LoadOp op) {
   return mlir::triton::isTensorPointerType(op.getPtr().getType());
 }
 
-SmallVector<unsigned, 4> argSort(const SmallVector<int64_t> &arr) {
+SmallVector<unsigned, 4>
+getOrderFromContiguity(const SmallVector<int64_t> &arr) {
   SmallVector<unsigned, 4> ret(arr.size());
   std::iota(ret.begin(), ret.end(), 0);
+  std::reverse(ret.begin(), ret.end());
   std::stable_sort(ret.begin(), ret.end(),
                    [&](unsigned x, unsigned y) { return arr[x] > arr[y]; });
   return ret;
@@ -121,10 +123,10 @@ unsigned getElementBitWidth(RankedTensorType type) {
 }
 
 unsigned getNumElementsPerThread(Operation *op, SmallVector<unsigned> order,
-                                 ModuleAxisInfoAnalysis &axisInfoAnalysis) {
+                                 ModuleAxisInfoAnalysis &axisInfoAnalysis,
+                                 SmallVector<int64_t> &shapePerCTA) {
   Value val = getMemAccessPtr(op);
   auto ty = cast<RankedTensorType>(val.getType());
-  auto shapePerCTA = triton::gpu::getShapePerCTA(ty);
   AxisInfo &valInfo = *axisInfoAnalysis.getAxisInfo(val);
   unsigned elemNumBits = getElementBitWidth(ty);
   unsigned elemNumBytes = std::max(elemNumBits / 8, 1u);
