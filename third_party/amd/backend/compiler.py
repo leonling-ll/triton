@@ -252,6 +252,10 @@ class HIPBackend(BaseBackend):
 
         use_async_copy = is_async_copy_enabled(options.arch)
         use_block_pingpong = is_pingpong_schedule_enabled(options.arch, use_async_copy)
+        #use_async_copy = False
+        #use_block_pingpong = True
+        print(f"{use_async_copy=}")
+        print(f"{use_block_pingpong=}")
 
         amd.passes.ttgpuir.add_schedule_loops(pm, options.num_stages)
         amd.passes.ttgpuir.add_pipeline(pm, use_async_copy, use_block_pingpong)
@@ -510,6 +514,14 @@ class HIPBackend(BaseBackend):
         else:
             amdgcn = llvm.translate_to_asm(src, amd.TARGET_TRIPLE, options.arch, features, flags,
                                            options.enable_fp_fusion, False)
+        if knobs.amd.dump_amdgcn:
+            print("// -----// AMDGCN Dump //----- //")
+            print(amdgcn)
+        #amdgcn = re.sub(r's_waitcnt(\s+)lgkmcnt\(\s*\d+\s*\)',r's_waitcnt\1lgkmcnt(0)', amdgcn)
+        #amdgcn = re.sub(r'(s_waitcnt\s+vmcnt\(\s*\d+\s*\))(?!\s+lgkmcnt\(\d+\))',r'\1 lgkmcnt(0)',amdgcn)
+
+        # for gluon_256x256x64 stage2
+        #amdgcn = re.sub(r'^\s*s_waitcnt\s+vmcnt\(\s*\d+\s*\)\s*\n(\s*ds_read_b128.*)$',r'\1',amdgcn,flags=re.MULTILINE)
         if knobs.amd.dump_amdgcn:
             print("// -----// AMDGCN Dump //----- //")
             print(amdgcn)

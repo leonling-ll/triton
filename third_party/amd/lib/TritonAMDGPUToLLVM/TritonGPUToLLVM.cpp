@@ -110,9 +110,17 @@ struct ConvertTritonAMDGPUToLLVM
     if (targetInfo.requiresAliasInfoForAsyncOps())
       AMD::annotateLocalLoadsSyncedViaAsyncWait(mod);
 
-    ModuleMembarAnalysis membarPass(&allocation,
+    if (!std::getenv("WYSIWYG")) {
+      if (std::getenv("WYSIWYG_DEBUG"))
+        llvm::outs() << "After annotate:\n" << mod <<"\n";
+
+      ModuleMembarAnalysis membarPass(&allocation,
                                     mlir::triton::AMD::membarFilter);
-    membarPass.run();
+      membarPass.run();
+
+      if (std::getenv("WYSIWYG_DEBUG"))
+        llvm::outs() << "After Membar Analysis:\n" << mod <<"\n";
+    }
 
     // Lower functions
     {
@@ -140,6 +148,7 @@ struct ConvertTritonAMDGPUToLLVM
               applyPartialConversion(mod, funcTarget, std::move(funcPatterns))))
         return signalPassFailure();
     }
+    //llvm::outs() << "After func and call/ret convert:\n" << mod <<"\n";
 
     AMD::ModuleAxisInfoAnalysis axisInfoAnalysis(mod);
 
