@@ -165,8 +165,8 @@ def _addmm_x_BSD_variable_length_tile_d_swizzle_long_sequence_gluon(
 
     mfma_layout: gl.constexpr = gl.amd.AMDMFMALayout(
         version=3,
-        instr_shape=[16, 16],
-        # instr_shape=[16, 16, 16],
+        # instr_shape=[16, 16],
+        instr_shape=[16, 16, 16],
         transposed=True,
         warps_per_cta=[1, NUM_WARPS],
     )

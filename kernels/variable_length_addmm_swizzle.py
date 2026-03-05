@@ -8,11 +8,6 @@ import torch.nn.functional as F
 
 from torch.profiler import profile, record_function, ProfilerActivity
 
-# BLOCK_S比较大 效率非常高 在序列长度大于100 BatchSize=80 [3072 768]线性投影中
-# 即便真实序列长度等于最大序列长度 与原生实现速度几乎持平
-# 适用于序列长度比较大 >= 512的场景
-# 如果序列最大长度在[256 ~ 512]之间 BLOCK_S可以选取64
-
 # !!!注意 因为需要在 length 维度上按照真实长度进行节约计算 BLOCK_S不能太大 下面按照业务需求指定为64
 if torch.version.hip:
     autotune_configs = [
@@ -33,7 +28,7 @@ if torch.version.hip:
         #               'matrix_instr_nonkdim': 16, "waves_per_eu": 2, "kpack": 2}, num_warps=4, num_stages=2),
         # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8,
         #               'matrix_instr_nonkdim': 16, "waves_per_eu": 4, "kpack": 1}, num_warps=4, num_stages=2),
-        triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8,
+        triton.Config({"TILE_D": 32, "BLOCK_S": 128, "BLOCK_D": 128, "GROUP_SIZE_M": 8,
                       'matrix_instr_nonkdim': 16, "waves_per_eu": 0, "kpack": 2}, num_warps=4, num_stages=2),
         # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8, 'matrix_instr_nonkdim': 16, "waves_per_eu": 4, "kpack": 4}, num_warps=4, num_stages=2),
         # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8, 'matrix_instr_nonkdim': 32, "waves_per_eu": 4, "kpack": 4}, num_warps=4, num_stages=2),
@@ -115,20 +110,20 @@ def _addmm_x_BSD_variable_length_tile_d_swizzle_long_sequence_triton(
     # if row_start >= real_length or row_start >= M:
     #     return
     if row_start >= real_length or row_start >= M:
-        # 直接写0到输出
-        out_block_ptr = tl.make_block_ptr(
-            base=output_ptr + pid_b * output_stride_b,
-            shape=(M, D_OUT),
-            strides=(output_stride_s, output_stride_d),
-            offsets=(pid_s * BLOCK_S, pid_d * BLOCK_D),
-            block_shape=(BLOCK_S, BLOCK_D),
-            order=(1, 0)
-        )
-        zeros = tl.zeros((BLOCK_S, BLOCK_D), dtype=output_ptr.dtype.element_ty)
-        if EVEN_D:
-            tl.store(out_block_ptr, zeros, boundary_check=(0,))
-        else:
-            tl.store(out_block_ptr, zeros, boundary_check=(0, 1))
+        # # 直接写0到输出
+        # out_block_ptr = tl.make_block_ptr(
+        #     base=output_ptr + pid_b * output_stride_b,
+        #     shape=(M, D_OUT),
+        #     strides=(output_stride_s, output_stride_d),
+        #     offsets=(pid_s * BLOCK_S, pid_d * BLOCK_D),
+        #     block_shape=(BLOCK_S, BLOCK_D),
+        #     order=(1, 0)
+        # )
+        # zeros = tl.zeros((BLOCK_S, BLOCK_D), dtype=output_ptr.dtype.element_ty)
+        # if EVEN_D:
+        #     tl.store(out_block_ptr, zeros, boundary_check=(0,))
+        # else:
+        #     tl.store(out_block_ptr, zeros, boundary_check=(0, 1))
         return
 
     x_block_ptr = tl.make_block_ptr(
