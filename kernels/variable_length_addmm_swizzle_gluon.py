@@ -73,7 +73,7 @@ def pid_grid(pid: int, num_pid_m: int, num_pid_n: int, GROUP_SIZE_M: tl.constexp
 # 如果序列最大长度在[256 ~ 512]之间 BLOCK_S可以选取64
 if torch.version.hip:
     autotune_configs = [
-        triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8,
+        triton.Config({"TILE_D": 64, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8,
                       'matrix_instr_nonkdim': 16, "waves_per_eu": 2, "kpack": 2}, num_warps=4, num_stages=2),
     ]
 else:
@@ -424,8 +424,6 @@ def torch_prof_variable_length_swizzle_addmm_gluon(B, S, DI, DO, REAL_LEN):
     def fn(x):
         x = call_addmm_x_BSD_variable_length_tile_d_swizzle_gluon(
             x, weight_in, bias_in, lengths)
-        x = call_addmm_x_BSD_variable_length_tile_d_swizzle_gluon(
-            x, weight_out, bias_out, lengths)
         return x
 
     for _ in range(10):
@@ -441,20 +439,6 @@ def torch_prof_variable_length_swizzle_addmm_gluon(B, S, DI, DO, REAL_LEN):
 
 
 def validate():
-    # x = torch.randn(4, 8, 32) % 1
-    # weight = torch.randn(16, 32) % 1
-    # bias = torch.randn(16) % 1
-    # lengths = torch.Tensor([8, 8, 8, 8]).to(torch.int32)
-
-    # x, weight, bias, lengths = x.cuda(), weight.cuda(), bias.cuda(), lengths.cuda()
-    # x, weight, bias = x.half(), weight.half(), bias.half()
-
-    # output = call_addmm_x_BSD_variable_length_tile_d_triton(x, weight, bias, lengths)
-    # output_base = F.linear(x, weight, bias)
-    # print(torch.max(torch.abs(output - output_base)))
-    # print(torch.max(torch.abs(F.layer_norm(output, (4, 8, 16)) - F.layer_norm(output_base, (4, 8, 16)))))
-
-    # import pdb;pdb.set_trace()
 
     x = torch.randn(4, 16, 3072) % 1
     weight = torch.randn(768, 3072) % 1
@@ -469,10 +453,6 @@ def validate():
     res_base = F.linear(x, weight, bias)
 
     torch.allclose(res, res_base, atol=1e-3, rtol=1e-3)
-    # for i in range(16):print(torch.max(torch.abs(res[0][i] - res_base[0][i])), i)
-
-    # import pdb
-    # pdb.set_trace()
 
 
 if __name__ == "__main__":

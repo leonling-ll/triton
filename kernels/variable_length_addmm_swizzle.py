@@ -28,22 +28,8 @@ if torch.version.hip:
         #               'matrix_instr_nonkdim': 16, "waves_per_eu": 2, "kpack": 2}, num_warps=4, num_stages=2),
         # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8,
         #               'matrix_instr_nonkdim': 16, "waves_per_eu": 4, "kpack": 1}, num_warps=4, num_stages=2),
-        triton.Config({"TILE_D": 32, "BLOCK_S": 128, "BLOCK_D": 128, "GROUP_SIZE_M": 8,
-                      'matrix_instr_nonkdim': 16, "waves_per_eu": 0, "kpack": 2}, num_warps=4, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8, 'matrix_instr_nonkdim': 16, "waves_per_eu": 4, "kpack": 4}, num_warps=4, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8, 'matrix_instr_nonkdim': 32, "waves_per_eu": 4, "kpack": 4}, num_warps=4, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8, 'matrix_instr_nonkdim': 16, "waves_per_eu": 4, "kpack": 2}, num_warps=2, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8, 'matrix_instr_nonkdim': 16, "waves_per_eu": 4, "kpack": 4}, num_warps=2, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8, 'matrix_instr_nonkdim': 32, "waves_per_eu": 4, "kpack": 4}, num_warps=2, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 128, "BLOCK_D":128, "GROUP_SIZE_M": 16, 'matrix_instr_nonkdim': 16, "waves_per_eu": 4, "kpack": 2}, num_warps=4, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 128, "BLOCK_D":128, "GROUP_SIZE_M": 16, 'matrix_instr_nonkdim': 16, "waves_per_eu": 4, "kpack": 4}, num_warps=4, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 128, "BLOCK_D":128, "GROUP_SIZE_M": 16, 'matrix_instr_nonkdim': 32, "waves_per_eu": 4, "kpack": 4}, num_warps=4, num_stages=2),
-
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8, 'matrix_instr_nonkdim': 16, "waves_per_eu": 0, "kpack": 1}, num_warps=4, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8, 'matrix_instr_nonkdim': 16, "waves_per_eu": 0, "kpack": 1}, num_warps=8, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 16, 'matrix_instr_nonkdim': 16, "waves_per_eu": 0, "kpack": 1}, num_warps=8, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 16, 'matrix_instr_nonkdim': 16, "waves_per_eu": 0, "kpack": 1}, num_warps=4, num_stages=2),
-        # triton.Config({"TILE_D": 32, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 4, 'matrix_instr_nonkdim': 16, "waves_per_eu": 0, "kpack": 1}, num_warps=8, num_stages=2),
+        triton.Config({"TILE_D": 64, "BLOCK_S": 64, "BLOCK_D": 128, "GROUP_SIZE_M": 8,
+                      'matrix_instr_nonkdim': 16, "waves_per_eu": 2, "kpack": 2}, num_warps=4, num_stages=2),
     ]
 else:
     autotune_configs = [
@@ -74,27 +60,114 @@ def _addmm_x_BSD_variable_length_tile_d_swizzle_long_sequence_triton(
 ):
     gemm_type = x_ptr.dtype.element_ty
     num_pid_n = tl.cdiv(D_OUT, BLOCK_D)
+
+    # -------- L2 Cache Swizzling 加速 ----------
     total_programs = tl.num_programs(0)
     num_pid_m = total_programs // num_pid_n
+    pid = tl.program_id(0)
 
-    # # -------- L2 Cache Swizzling 加速 ----------
-    # pid = tl.program_id(0)
+    num_pid_in_group = GROUP_SIZE_M * num_pid_n
+    group_id = pid // num_pid_in_group
+    first_pid_m = group_id * GROUP_SIZE_M
+    group_size_m = min(num_pid_m - first_pid_m, GROUP_SIZE_M)
 
-    # num_pid_in_group = GROUP_SIZE_M * num_pid_n
-    # group_id = pid // num_pid_in_group
-    # first_pid_m = group_id * GROUP_SIZE_M
-    # group_size_m = min(num_pid_m - first_pid_m, GROUP_SIZE_M)
-
-    # pid_m = first_pid_m + (pid % group_size_m)
-    # pid_n = (pid % num_pid_in_group) // group_size_m
+    pid_m = first_pid_m + (pid % group_size_m)
+    pid_n = (pid % num_pid_in_group) // group_size_m
 
     # ------------- Swizzle 结束-----------------
+
+    num_pid_m_per_batch = tl.cdiv(M, BLOCK_S)
+    pid_b = pid_m // num_pid_m_per_batch
+    pid_s = pid_m % num_pid_m_per_batch
+    pid_d = pid_n  # 对应 D_OUT
+
+    real_length = tl.load(lengths_ptr + pid_b * lengths_stride).to(tl.int32)
+    row_start = pid_s * BLOCK_S
+
+    offs_s = row_start + tl.arange(0, BLOCK_S)       # [BLOCK_S]
+    offs_n = pid_d * BLOCK_D + tl.arange(0, BLOCK_D)  # [BLOCK_D]
+    offs_k = tl.arange(0, TILE_D)                     # [TILE_D]
+
+    s_mask = offs_s < M         # [BLOCK_S]
+    n_mask = offs_n < D_OUT     # [BLOCK_D]
+
+    out_ptrs = (output_ptr + pid_b * output_stride_b
+                + offs_s[:, None] * output_stride_s
+                + offs_n[None, :] * output_stride_d)  # [BLOCK_S, BLOCK_D]
+
+    if row_start >= real_length or row_start >= M:
+        # 直接写0到输出
+        zeros = tl.zeros((BLOCK_S, BLOCK_D), dtype=output_ptr.dtype.element_ty)
+        if EVEN_D:
+            tl.store(out_ptrs, zeros, mask=s_mask[:, None])
+        else:
+            tl.store(out_ptrs, zeros, mask=s_mask[:, None] & n_mask[None, :])
+        return
+
+    x_ptrs = (x_ptr + pid_b * x_stride_b
+              + offs_s[:, None] * x_stride_s
+              + offs_k[None, :] * x_stride_d)   # [BLOCK_S, TILE_D]
+
+    w_ptrs = (weight_ptr
+              + offs_k[:, None] * weight_stride_in
+              + offs_n[None, :] * weight_stride_out)  # [TILE_D, BLOCK_D]
+
+    acc = tl.zeros((BLOCK_S, BLOCK_D), dtype=tl.float32)
+
+    # 在d_in维度上进行tiling
+    for start_d_in in range(0, D_IN, TILE_D):
+    # for start_d_in in tl.range(0, D_IN, TILE_D, num_stages=2):
+        if EVEN_K:
+            x = tl.load(x_ptrs, mask=s_mask[:, None], other=0.0)
+            weight = tl.load(w_ptrs, mask=n_mask[None, :], other=0.0).to(gemm_type)
+        else:
+            k_mask = (start_d_in + offs_k) < D_IN  # [TILE_D]
+            x = tl.load(x_ptrs, mask=s_mask[:, None] & k_mask[None, :], other=0.0)
+            weight = tl.load(w_ptrs, mask=k_mask[:, None] & n_mask[None, :], other=0.0).to(gemm_type)
+
+        acc = tl.dot(x, weight, acc)
+
+        x_ptrs += TILE_D * x_stride_d
+        w_ptrs += TILE_D * weight_stride_in
+
+    if EVEN_D:
+        bias = tl.load(bias_ptr + offs_n * bias_stride)
+    else:
+        bias = tl.load(bias_ptr + offs_n * bias_stride, mask=n_mask, other=0.0)
+    acc += bias[None, :]
+
+    # write back
+    if EVEN_D:
+        tl.store(out_ptrs, acc.to(gemm_type), mask=s_mask[:, None])
+    else:
+        tl.store(out_ptrs, acc.to(gemm_type), mask=s_mask[:, None] & n_mask[None, :])
+
+
+@triton.autotune(
+    configs=autotune_configs,
+    key=["M", "D_IN", "D_OUT"],
+)
+@triton.jit
+def _addmm_x_BSD_variable_length_tile_d_no_swizzle_long_sequence_triton(
+    x_ptr, weight_ptr, bias_ptr, lengths_ptr, output_ptr,
+    M: tl.constexpr, D_IN: tl.constexpr, D_OUT: tl.constexpr,
+    x_stride_b: tl.constexpr, x_stride_s: tl.constexpr, x_stride_d: tl.constexpr,
+    weight_stride_in: tl.constexpr, weight_stride_out: tl.constexpr,
+    bias_stride: tl.constexpr, lengths_stride: tl.constexpr,
+    output_stride_b: tl.constexpr, output_stride_s: tl.constexpr, output_stride_d: tl.constexpr,
+    TILE_D: tl.constexpr, BLOCK_S: tl.constexpr, BLOCK_D: tl.constexpr,
+    GROUP_SIZE_M: tl.constexpr = 8,
+    EVEN_K: tl.constexpr = True,
+    EVEN_D: tl.constexpr = True
+):
+    gemm_type = x_ptr.dtype.element_ty
+    num_pid_n = tl.cdiv(D_OUT, BLOCK_D)
 
     # Simple direct mapping without swizzle
     pid = tl.program_id(0)
     total_programs = tl.num_programs(0)
     num_pid_m = total_programs // num_pid_n
-    
+
     pid_m = pid // num_pid_n
     pid_n = pid % num_pid_n
 
@@ -107,41 +180,34 @@ def _addmm_x_BSD_variable_length_tile_d_swizzle_long_sequence_triton(
 
     real_length = tl.load(lengths_ptr + pid_b * lengths_stride).to(tl.int32)
     row_start = pid_s * BLOCK_S
-    # if row_start >= real_length or row_start >= M:
-    #     return
+
+    offs_s = row_start + tl.arange(0, BLOCK_S)       # [BLOCK_S]
+    offs_n = pid_d * BLOCK_D + tl.arange(0, BLOCK_D)  # [BLOCK_D]
+    offs_k = tl.arange(0, TILE_D)                     # [TILE_D]
+
+    s_mask = offs_s < M         # [BLOCK_S]
+    n_mask = offs_n < D_OUT     # [BLOCK_D]
+
+    out_ptrs = (output_ptr + pid_b * output_stride_b
+                + offs_s[:, None] * output_stride_s
+                + offs_n[None, :] * output_stride_d)  # [BLOCK_S, BLOCK_D]
+
     if row_start >= real_length or row_start >= M:
-        # # 直接写0到输出
-        # out_block_ptr = tl.make_block_ptr(
-        #     base=output_ptr + pid_b * output_stride_b,
-        #     shape=(M, D_OUT),
-        #     strides=(output_stride_s, output_stride_d),
-        #     offsets=(pid_s * BLOCK_S, pid_d * BLOCK_D),
-        #     block_shape=(BLOCK_S, BLOCK_D),
-        #     order=(1, 0)
-        # )
-        # zeros = tl.zeros((BLOCK_S, BLOCK_D), dtype=output_ptr.dtype.element_ty)
-        # if EVEN_D:
-        #     tl.store(out_block_ptr, zeros, boundary_check=(0,))
-        # else:
-        #     tl.store(out_block_ptr, zeros, boundary_check=(0, 1))
+        # 直接写0到输出
+        zeros = tl.zeros((BLOCK_S, BLOCK_D), dtype=output_ptr.dtype.element_ty)
+        if EVEN_D:
+            tl.store(out_ptrs, zeros, mask=s_mask[:, None])
+        else:
+            tl.store(out_ptrs, zeros, mask=s_mask[:, None] & n_mask[None, :])
         return
 
-    x_block_ptr = tl.make_block_ptr(
-        base=x_ptr + pid_b * x_stride_b,
-        shape=(M, D_IN),
-        strides=(x_stride_s, x_stride_d),
-        offsets=(pid_s * BLOCK_S, 0),
-        block_shape=(BLOCK_S, TILE_D),
-        order=(1, 0)
-    )
-    weight_block_ptr = tl.make_block_ptr(
-        base=weight_ptr,
-        shape=(D_IN, D_OUT),
-        strides=(weight_stride_in, weight_stride_out),
-        offsets=(0, pid_d * BLOCK_D),
-        block_shape=(TILE_D, BLOCK_D),
-        order=(0, 1)
-    )
+    x_ptrs = (x_ptr + pid_b * x_stride_b
+              + offs_s[:, None] * x_stride_s
+              + offs_k[None, :] * x_stride_d)   # [BLOCK_S, TILE_D]
+
+    w_ptrs = (weight_ptr
+              + offs_k[:, None] * weight_stride_in
+              + offs_n[None, :] * weight_stride_out)  # [TILE_D, BLOCK_D]
 
     acc = tl.zeros((BLOCK_S, BLOCK_D), dtype=tl.float32)
 
@@ -149,47 +215,29 @@ def _addmm_x_BSD_variable_length_tile_d_swizzle_long_sequence_triton(
     for start_d_in in range(0, D_IN, TILE_D):
     # for start_d_in in tl.range(0, D_IN, TILE_D, num_stages=2):
         if EVEN_K:
-            x = tl.load(x_block_ptr, boundary_check=(0,))
-            weight = tl.load(weight_block_ptr,
-                             boundary_check=(1,)).to(gemm_type)
+            x = tl.load(x_ptrs, mask=s_mask[:, None], other=0.0)
+            weight = tl.load(w_ptrs, mask=n_mask[None, :], other=0.0).to(gemm_type)
         else:
-            x = tl.load(x_block_ptr, boundary_check=(0, 1))
-            weight = tl.load(weight_block_ptr,
-                             boundary_check=(0, 1)).to(gemm_type)
+            k_mask = (start_d_in + offs_k) < D_IN  # [TILE_D]
+            x = tl.load(x_ptrs, mask=s_mask[:, None] & k_mask[None, :], other=0.0)
+            weight = tl.load(w_ptrs, mask=k_mask[:, None] & n_mask[None, :], other=0.0).to(gemm_type)
 
         acc = tl.dot(x, weight, acc)
 
-        x_block_ptr = tl.advance(x_block_ptr, (0, TILE_D))
-        weight_block_ptr = tl.advance(weight_block_ptr, (TILE_D, 0))
+        x_ptrs += TILE_D * x_stride_d
+        w_ptrs += TILE_D * weight_stride_in
 
     if EVEN_D:
-        bias_mask = None
-        bias = tl.load(bias_ptr + pid_d * BLOCK_D * bias_stride)
+        bias = tl.load(bias_ptr + offs_n * bias_stride)
     else:
-        bias_mask = pid_d * BLOCK_D + tl.arange(0, BLOCK_D) < D_OUT
-        bias = tl.load(
-            bias_ptr + (pid_d * BLOCK_D + tl.arange(0, BLOCK_D)) * bias_stride,
-            mask=bias_mask,
-            other=0.0
-        )
+        bias = tl.load(bias_ptr + offs_n * bias_stride, mask=n_mask, other=0.0)
     acc += bias[None, :]
 
     # write back
-    out_block_ptr = tl.make_block_ptr(
-        base=output_ptr + pid_b * output_stride_b,
-        shape=(M, D_OUT),
-        strides=(output_stride_s, output_stride_d),
-        offsets=(pid_s * BLOCK_S, pid_d * BLOCK_D),
-        block_shape=(BLOCK_S, BLOCK_D),
-        order=(1, 0)
-    )
     if EVEN_D:
-        tl.store(out_block_ptr, acc.to(
-            out_block_ptr.dtype.element_ty), boundary_check=(0,))
+        tl.store(out_ptrs, acc.to(gemm_type), mask=s_mask[:, None])
     else:
-        tl.store(out_block_ptr, acc.to(
-            out_block_ptr.dtype.element_ty), boundary_check=(0, 1))
-
+        tl.store(out_ptrs, acc.to(gemm_type), mask=s_mask[:, None] & n_mask[None, :])
 
 def call_addmm_x_BSD_variable_length_tile_d_swizzle_triton(x, weight, bias, lengths):
     BATCH, MAX_SEQUENCE_LEN, D_IN = x.shape
@@ -204,6 +252,31 @@ def call_addmm_x_BSD_variable_length_tile_d_swizzle_triton(x, weight, bias, leng
     output = torch.empty((BATCH, MAX_SEQUENCE_LEN, D_OUT),
                          device=x.device, dtype=x.dtype)
     torch.library.wrap_triton(_addmm_x_BSD_variable_length_tile_d_swizzle_long_sequence_triton)[grid](
+        x, weight, bias, lengths, output,
+        MAX_SEQUENCE_LEN, D_IN, D_OUT,
+        x.stride(0), x.stride(1), x.stride(2),
+        weight.stride(1), weight.stride(0),
+        bias.stride(0), lengths.stride(0),
+        output.stride(0), output.stride(1), output.stride(2),
+        EVEN_K=(D_IN % TILE_D == 0),
+        EVEN_D=(D_OUT % BLOCK_D == 0)
+    )
+    return output
+
+
+def call_addmm_x_BSD_variable_length_tile_d_no_swizzle_triton(x, weight, bias, lengths):
+    BATCH, MAX_SEQUENCE_LEN, D_IN = x.shape
+    D_OUT = weight.shape[0]
+
+    def grid(META):
+        num_pid_m = BATCH * triton.cdiv(MAX_SEQUENCE_LEN, META['BLOCK_S'])
+        num_pid_n = triton.cdiv(D_OUT, META['BLOCK_D'])
+        return (num_pid_m * num_pid_n, )
+    TILE_D = 32
+    BLOCK_D = 128
+    output = torch.empty((BATCH, MAX_SEQUENCE_LEN, D_OUT),
+                         device=x.device, dtype=x.dtype)
+    torch.library.wrap_triton(_addmm_x_BSD_variable_length_tile_d_no_swizzle_long_sequence_triton)[grid](
         x, weight, bias, lengths, output,
         MAX_SEQUENCE_LEN, D_IN, D_OUT,
         x.stride(0), x.stride(1), x.stride(2),
@@ -287,15 +360,15 @@ def torch_prof_variable_length_swizzle_addmm(B, S, DI, DO, REAL_LEN):
     lengths = lengths.cuda()
 
     def fn(x):
-        x = call_addmm_x_BSD_variable_length_tile_d_swizzle_triton(x, weight_in, bias_in, lengths)
-        x = call_addmm_x_BSD_variable_length_tile_d_swizzle_triton(x, weight_out, bias_out, lengths)
+        x = call_addmm_x_BSD_variable_length_tile_d_no_swizzle_triton(x, weight_in, bias_in, lengths)
+        # x = call_addmm_x_BSD_variable_length_tile_d_no_swizzle_triton(x, weight_out, bias_out, lengths)
         return x
-        
+
     for _ in range(10):
         fn(x)
     torch.cuda.synchronize()
 
-    with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True, profile_memory=False, with_stack=True) as p:
+    with profile(activities=[ProfilerActivity.CUDA], record_shapes=True, profile_memory=False, with_stack=True) as p:
         for _ in range(50):
             fn(x)
     torch.cuda.synchronize()
@@ -304,21 +377,6 @@ def torch_prof_variable_length_swizzle_addmm(B, S, DI, DO, REAL_LEN):
 
 
 def old_main():
-    # x = torch.randn(4, 8, 32) % 1
-    # weight = torch.randn(16, 32) % 1
-    # bias = torch.randn(16) % 1
-    # lengths = torch.Tensor([8, 8, 8, 8]).to(torch.int32)
-
-    # x, weight, bias, lengths = x.cuda(), weight.cuda(), bias.cuda(), lengths.cuda()
-    # x, weight, bias = x.half(), weight.half(), bias.half()
-
-    # output = call_addmm_x_BSD_variable_length_tile_d_triton(x, weight, bias, lengths)
-    # output_base = F.linear(x, weight, bias)
-    # print(torch.max(torch.abs(output - output_base)))
-    # print(torch.max(torch.abs(F.layer_norm(output, (4, 8, 16)) - F.layer_norm(output_base, (4, 8, 16)))))
-
-    # import pdb;pdb.set_trace()
-
     real_length = 100
     x = torch.randn(4, 16, 3072) % 1
     x = torch.randn(80, 100, 3072) % 1
@@ -340,51 +398,51 @@ def old_main():
     pdb.set_trace()
 
 
-bench_configs = []
-bench_configs.append(triton.testing.Benchmark(
-    x_names=["B", "S", "DI", "DO", "REAL_LEN"],
-    x_vals=[
-        [80, 100, 3072, 768, 100],   #
-        [80, 100, 3072, 768, 50],   #
-    ],
-    line_arg="provider",
-    line_vals=["triton", "torch"],
-    line_names=["Triton", "Torch"],
-    styles=[("green", "-"), ("blue", "-")],
-    plot_name="triton_copy_addmm_trans_performance",
-    args={}
-))
-
-
-@triton.testing.perf_report(bench_configs)
-def triton_benchmark(B, S, DI, DO, REAL_LEN, provider):
-
-    x = (torch.randn(B, S, DI) % 1)
-    weight = (torch.randn(DO, DI) % 1)
-    bias = (torch.randn(DO) % 1)
-    lengths = torch.Tensor([REAL_LEN] * B).to(torch.int32).unsqueeze(-1)
-
-    x = x.cuda().half()
-    weight = weight.cuda().half()
-    bias = bias.cuda().half()
-    lengths = lengths.cuda()
-
-    quantiles = [0.5, 0.1, 0.9]
-
-    def triton_fn(): return call_addmm_x_BSD_variable_length_tile_d_swizzle_triton(
-        x, weight, bias, lengths)
-
-    def torch_fn(): return F.linear(x, weight, bias)
-
-    if provider == "triton":
-        ms, min_ms, max_ms = triton.testing.do_bench(triton_fn, quantiles=quantiles)
-    elif provider == "torch":
-        ms, min_ms, max_ms = triton.testing.do_bench(torch_fn, quantiles=quantiles)
-    else:
-        raise ValueError(f"Invalid provider: {provider}")
-
-    def tim(ms): return ms
-    return tim(ms), tim(max_ms), tim(min_ms)
+# bench_configs = []
+# bench_configs.append(triton.testing.Benchmark(
+#     x_names=["B", "S", "DI", "DO", "REAL_LEN"],
+#     x_vals=[
+#         [80, 100, 3072, 768, 100],   #
+#         [80, 100, 3072, 768, 50],   #
+#     ],
+#     line_arg="provider",
+#     line_vals=["triton", "torch"],
+#     line_names=["Triton", "Torch"],
+#     styles=[("green", "-"), ("blue", "-")],
+#     plot_name="triton_copy_addmm_trans_performance",
+#     args={}
+# ))
+#
+#
+# @triton.testing.perf_report(bench_configs)
+# def triton_benchmark(B, S, DI, DO, REAL_LEN, provider):
+#
+#     x = (torch.randn(B, S, DI) % 1)
+#     weight = (torch.randn(DO, DI) % 1)
+#     bias = (torch.randn(DO) % 1)
+#     lengths = torch.Tensor([REAL_LEN] * B).to(torch.int32).unsqueeze(-1)
+#
+#     x = x.cuda().half()
+#     weight = weight.cuda().half()
+#     bias = bias.cuda().half()
+#     lengths = lengths.cuda()
+#
+#     quantiles = [0.5, 0.1, 0.9]
+#
+#     def triton_fn(): return call_addmm_x_BSD_variable_length_tile_d_swizzle_triton(
+#         x, weight, bias, lengths)
+#
+#     def torch_fn(): return F.linear(x, weight, bias)
+#
+#     if provider == "triton":
+#         ms, min_ms, max_ms = triton.testing.do_bench(triton_fn, quantiles=quantiles)
+#     elif provider == "torch":
+#         ms, min_ms, max_ms = triton.testing.do_bench(torch_fn, quantiles=quantiles)
+#     else:
+#         raise ValueError(f"Invalid provider: {provider}")
+#
+#     def tim(ms): return ms
+#     return tim(ms), tim(max_ms), tim(min_ms)
 
 
 if __name__ == "__main__":
