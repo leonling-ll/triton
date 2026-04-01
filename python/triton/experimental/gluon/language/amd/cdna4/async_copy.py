@@ -1,6 +1,7 @@
 from ..._core import ir, builtin, _unwrap_if_constexpr
 from ..._semantic import _check
 from ..._layouts import DistributedLayout
+from ..._layouts import BlockedLayout, SliceLayout, DistributedLinearLayout
 from ..cdna3 import _verify_buffer_ops
 
 __all__ = [

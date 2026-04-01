@@ -1099,6 +1099,12 @@ void init_gluon_ir(py::module &&m) {
            [](GluonOpBuilder &self, Value memDesc, int count) -> Value {
              return self.create<ttag::ArriveBarrierOp>(memDesc, count);
            })
+      .def("create_extract_slice",
+           [](GluonOpBuilder &self, Type resultType, Value source,
+              std::vector<int64_t> offsets) -> Value {
+             return self.create<ttag::ExtractSliceOp>(resultType, source,
+                                                     offsets);
+           })
       .def("create_amd_cluster_arrive",
            [](GluonOpBuilder &self) {
              self.create<ttag::ClusterBarrierArriveOp>();

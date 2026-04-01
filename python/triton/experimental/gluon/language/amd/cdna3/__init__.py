@@ -19,6 +19,7 @@ __all__ = [
     "buffer_atomic_xor",
     "buffer_load",
     "buffer_store",
+    "extract_slice",
     "mfma",
     "sched_barrier",
     "sched_group_barrier",
@@ -167,6 +168,29 @@ def buffer_store(stored_value, ptr, offsets, mask=None, cache=None, _semantic: G
     cache_modifier = _semantic._str_to_store_cache_modifier(cache) if cache is not None else ir.CACHE_MODIFIER.NONE
 
     _semantic.builder.create_buffer_store(stored_value.handle, ptr.handle, offsets.handle, mask, cache_modifier)
+
+
+@builtin
+def extract_slice(src, sizes, offsets, _semantic: GluonSemantic = None):
+    """
+    Extract a contiguous slice from a distributed tensor.
+
+    The slice must be aligned to CTA tile boundaries so that extraction is a
+    register-view operation with no data movement between threads.
+
+    Args:
+        src (tensor): Source tensor to slice.
+        sizes (list[int]): Shape of the result slice.
+        offsets (list[int]): Static offsets into the source tensor (must be
+            multiples of the CTA tile size along each dimension).
+    """
+    sizes = [_unwrap_if_constexpr(s) for s in sizes]
+    offsets = [_unwrap_if_constexpr(o) for o in offsets]
+    result_ty = ttgl.distributed_type(src.type.element_ty, sizes, src.type.layout)
+    handle = _semantic.builder.create_extract_slice(
+        result_ty.to_ir(_semantic.builder), src.handle, offsets
+    )
+    return ttgl.tensor(handle, result_ty)
 
 
 @builtin
