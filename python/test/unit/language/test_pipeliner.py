@@ -15,6 +15,40 @@ def check_capabilities():
             pytest.skip("CUDA 8.0+ required")
 
 
+@pytest.mark.skipif(not is_hip_cdna(), reason="AMD chained-dot schedule")
+@pytest.mark.parametrize("N", [0, 17, 32, 64, 96, 129])
+@pytest.mark.parametrize("num_stages", [2, 3, 4])
+def test_chained_dot_pipeline_independent_epilogue_load(N, num_stages, device):
+
+    @triton.jit
+    def kernel(Q, K, V, Bias, Out, M: tl.constexpr, N: tl.constexpr, NUM_STAGES: tl.constexpr):
+        rows = tl.program_id(0) * 32 + tl.arange(0, 32)
+        offsets = tl.arange(0, 32)
+        q = tl.load(Q + rows[:, None] * 32 + offsets[None, :], rows[:, None] < M, 0)
+        acc = tl.full((32, 32), 0, tl.float32)
+        for start in tl.range(0, N, 32, num_stages=NUM_STAGES):
+            cols = start + offsets
+            k = tl.load(K + offsets[:, None] + cols[None, :] * 32, cols[None, :] < N, 0)
+            qk = tl.dot(q, k) * 0.125
+            v = tl.load(V + cols[:, None] * 32 + offsets[None, :], cols[:, None] < N, 0)
+            acc = tl.dot(qk.to(tl.float16), v, acc)
+            bias = tl.load(Bias + cols, cols < N, 0)
+            acc += tl.sum(bias.to(tl.float32), 0)
+        tl.store(Out + rows[:, None] * 32 + offsets[None, :], acc, rows[:, None] < M)
+
+    torch.manual_seed(42)
+    M = 65
+    q = torch.randn((M, 32), device=device, dtype=torch.float16)
+    k = torch.randn((N, 32), device=device, dtype=torch.float16)
+    v = torch.randn((N, 32), device=device, dtype=torch.float16)
+    bias = torch.randn((N,), device=device, dtype=torch.float16)
+    out = torch.empty((M, 32), device=device, dtype=torch.float32)
+    kernel[(triton.cdiv(M, 32),)](q, k, v, bias, out, M, N, num_stages, num_stages=num_stages)
+    scores = ((q.float() @ k.float().T) * 0.125).half()
+    ref = scores.float() @ v.float() + bias.float().sum()
+    torch.testing.assert_close(out, ref, atol=1e-2, rtol=1e-2)
+
+
 @triton.jit
 def matmul_kernel(  #
         a_ptr, scale_ptr, b_ptr, output_ptr,  #

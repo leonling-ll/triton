@@ -2,6 +2,7 @@
 #include "TritonAMDGPUTransforms/Passes.h"
 #include "amd/lib/TritonAMDGPUToLLVM/AsyncUtility.h"
 #include "amd/lib/TritonAMDGPUTransforms/Utility.h"
+#include "mlir/Interfaces/SideEffectInterfaces.h"
 #include "third_party/amd/include/Analysis/AxisInfoExt.h"
 #include "third_party/amd/lib/TritonAMDGPUTransforms/Pipeliner/PipelineUtility.h"
 #include "triton/Analysis/AxisInfo.h"
@@ -400,9 +401,43 @@ buildSchedule(scf::ForOp &forOp, int numStages, const LoadToInfoMap &loadToInfo,
 // pipeliner is meant to be used in combination with pingpong
 namespace ChainedDotSchedule {
 using namespace mlir::ChainedDotSchedule;
+
+// Extra loads may be prefetched only when their addresses and masks do not
+// depend on loop-carried values, other loads, or the dots being scheduled.
+bool hasIndependentOperands(Operation *loadOp, scf::ForOp forOp) {
+  // Without alias analysis, do not move an extra global read across writes
+  // or unknown effects. Local allocations cannot alias its global pointer.
+  for (Operation &op : forOp.getBody()->without_terminator()) {
+    if (!isMemoryEffectFree(&op) &&
+        !isa<tt::LoadOp, ttg::LocalAllocOp, ttg::LocalLoadOp>(&op))
+      return false;
+  }
+  SmallVector<Value> worklist(loadOp->getOperands());
+  DenseSet<Operation *> seen;
+  while (!worklist.empty()) {
+    Value value = worklist.pop_back_val();
+    if (auto arg = dyn_cast<BlockArgument>(value)) {
+      if (arg.getOwner() == forOp.getBody() && arg != forOp.getInductionVar())
+        return false;
+      continue;
+    }
+    Operation *def = value.getDefiningOp();
+    if (!def || !forOp->isAncestor(def))
+      continue;
+    if (!seen.insert(def).second)
+      continue;
+    if (def->getBlock() != forOp.getBody() || def->getNumRegions() != 0 ||
+        isa<tt::DotOpInterface>(def) || !isMemoryEffectFree(def) ||
+        !isSpeculatable(def))
+      return false;
+    llvm::append_range(worklist, def->getOperands());
+  }
+  return true;
+}
+
 // We schedule loads one stage in front of their dots
 LogicalResult
-scheduleLoads(std::array<tt::DotOp, 2> dotOps,
+scheduleLoads(scf::ForOp forOp, std::array<tt::DotOp, 2> dotOps,
               const llvm::MapVector<Operation *, LoadInfo> &loadToInfo,
               const ChainedDotClusters &clusters,
               tt::CoarseSchedule &schedule) {
@@ -413,8 +448,13 @@ scheduleLoads(std::array<tt::DotOp, 2> dotOps,
     } else if (info.use == dotOps[1]) {
       schedule.insert(loadOp, STAGE_GLOBAL_LOAD_2,
                       clusters[CLUSTER_GLOBAL_LOAD_2]);
+    } else if (auto load = dyn_cast<tt::LoadOp>(loadOp);
+               load && !load.getIsVolatile() &&
+               hasIndependentOperands(loadOp, forOp)) {
+      schedule.insert(loadOp, STAGE_GLOBAL_LOAD_2,
+                      clusters[CLUSTER_GLOBAL_LOAD_2]);
     } else {
-      LDBG(*loadOp << " will not be pipelined because it's not used by a dot");
+      LDBG(*loadOp << " has no independent prefetch schedule");
     }
   }
   return success();
@@ -502,7 +542,7 @@ buildSchedule(scf::ForOp &forOp, int numStages, const LoadToInfoMap &loadToInfo,
   schedule.insert(dotOps[0], STAGE_DOT_1, clusters[CLUSTER_DOT_1]);
   schedule.insert(dotOps[1], STAGE_DOT_2, clusters[CLUSTER_DOT_2]);
 
-  if (failed(scheduleLoads(dotOps, loadToInfo, clusters, schedule)))
+  if (failed(scheduleLoads(forOp, dotOps, loadToInfo, clusters, schedule)))
     return {};
   dumpScheduleDebug(schedule, DEBUG_TYPE,
                     "Coarse schedule load and dots only:");
