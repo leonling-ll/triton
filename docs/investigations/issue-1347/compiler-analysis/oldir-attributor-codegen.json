@@ -1,0 +1,15 @@
+{
+  "source": "/home/leling/issue-investigations/1347/compiler-analysis/oldir-attributor.llir",
+  "agpr": "unchanged",
+  "flags": "",
+  "codegen_revision": "08b05a3352eeadd10eba4a25ffc19c2abb226448-2",
+  "inst_sha256": "f0cab9d279528abaa17b57656f55739290f4accd0f8b6c6a5710b709d2a5ca81",
+  "inst_count": 1176,
+  "vgpr_count": 224,
+  "vgpr_spill_count": 0,
+  "sgpr_count": 51,
+  "sgpr_spill_count": 0,
+  "private_segment_fixed_size": 0,
+  "scratch_instructions": 0,
+  "accvgpr_instructions": 0
+}

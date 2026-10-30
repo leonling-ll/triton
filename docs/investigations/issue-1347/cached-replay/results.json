@@ -1,0 +1,68 @@
+{
+  "shape": [
+    51200,
+    106496,
+    16384
+  ],
+  "device": "_CudaDeviceProperties(name='AMD Radeon Graphics', major=9, minor=5, gcnArchName='gfx950:sramecc+:xnack-', total_memory=294896MB, multi_processor_count=256, uuid=37326230-3838-6562-6134-306164376132, pci_bus_id=104, pci_device_id=0, pci_domain_id=0, L2_cache_size=4MB)",
+  "started": 1793264473.113493,
+  "variants": {
+    "oct27": {
+      "metadata": "/home/leling/issue-investigations/1347/cache-explicit/FC45GFWDO6H3DQVCJX6NCVIBGWXP7MMJVKCWUOYK6LBKAHHSMM6A/_gemm_afp4wfp4_kernel.json",
+      "hsaco_sha256": "3432f5adc7b5ab4acd78accafdb7c5423b7834b7e15e2201650697bcfb03378e",
+      "n_regs": 230,
+      "n_spills": 0,
+      "shared": 143296,
+      "correctness": "passed 32x32 samples vs decoded FP32 matmul",
+      "ms": [
+        53.02489471435547,
+        53.025665283203125,
+        53.08522415161133,
+        53.431392669677734,
+        53.47779083251953,
+        53.45075225830078,
+        53.52363586425781
+      ],
+      "median_ms": 53.431392669677734,
+      "median_tflops": 3343.926305985946
+    },
+    "oct29": {
+      "metadata": "/home/leling/issue-investigations/1347/cache-20261029/5NZO3TQ7CY5Q5ADCD3INBJGYOLBJDKWOWF5Z6JE372TMZMLOX25Q/_gemm_afp4wfp4_kernel.json",
+      "hsaco_sha256": "22f466fb79c741c8be649cb453e98bb1e3408d2356245192a8a6751edfc8ad4c",
+      "n_regs": 256,
+      "n_spills": 13,
+      "shared": 143296,
+      "correctness": "passed 32x32 samples vs decoded FP32 matmul",
+      "ms": [
+        73.02019500732422,
+        72.10346221923828,
+        72.54085159301758,
+        73.51647186279297,
+        72.72461700439453,
+        73.89807891845703,
+        73.52011489868164
+      ],
+      "median_ms": 73.02019500732422,
+      "median_tflops": 2446.866096367979
+    },
+    "current": {
+      "metadata": "/home/leling/issue-investigations/1347/cache-gap-baseline/LASRUDXUCJIAX5UAEJOX6TVWOLJLP56HIAHVYUS4XVK7CY6P2VIA/_gemm_afp4wfp4_kernel.json",
+      "hsaco_sha256": "77ffc7fd011cf0d04a1cc9f1139110625ec7f1a0cec868ca71ec5bc78a09dc7f",
+      "n_regs": 224,
+      "n_spills": 0,
+      "shared": 143296,
+      "correctness": "passed 32x32 samples vs decoded FP32 matmul",
+      "ms": [
+        52.869937896728516,
+        52.909423828125,
+        53.116943359375,
+        53.34067153930664,
+        53.45551300048828,
+        53.361473083496094,
+        53.392112731933594
+      ],
+      "median_ms": 53.34067153930664,
+      "median_tflops": 3349.6136129808183
+    }
+  }
+}

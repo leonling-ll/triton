@@ -1,0 +1,489 @@
+{
+  "shape": [
+    51200,
+    106496,
+    16384
+  ],
+  "device": "_CudaDeviceProperties(name='AMD Radeon Graphics', major=9, minor=5, gcnArchName='gfx950:sramecc+:xnack-', total_memory=294896MB, multi_processor_count=256, uuid=31363438-6562-3961-3664-373963376565, pci_bus_id=8, pci_device_id=0, pci_domain_id=0, L2_cache_size=4MB)",
+  "hip_visible_devices": "1",
+  "variants": [
+    {
+      "index": 0,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264361.0388248,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 52.13627624511719,
+      "tflops": 3426.9927271672645,
+      "paired_baseline_ms": 51.926910400390625,
+      "speedup": 0.9959842577988839
+    },
+    {
+      "index": 1,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264363.3143442,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 50.784210205078125,
+      "tflops": 3518.2321196310345
+    },
+    {
+      "index": 2,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 1,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264364.3160157,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 71.7138671875,
+      "tflops": 2491.43780025773
+    },
+    {
+      "index": 3,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 3,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264365.4449615,
+      "error": "OutOfResources(214976, 163840, 'shared memory')"
+    },
+    {
+      "index": 4,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 128,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264365.747793,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 60.335397720336914,
+      "tflops": 2961.2904905634937
+    },
+    {
+      "index": 5,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264366.7978268,
+      "error": "OutOfResources(286656, 163840, 'shared memory')"
+    },
+    {
+      "index": 6,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 1,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264367.1375754,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 294.25250244140625,
+      "tflops": 607.201767295686
+    },
+    {
+      "index": 7,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264370.067216,
+      "error": "OutOfResources(282592, 163840, 'shared memory')"
+    },
+    {
+      "index": 8,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 128,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264370.4265065,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 64.23832702636719,
+      "tflops": 2781.3713056422384
+    },
+    {
+      "index": 9,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 128,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264371.5257647,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 65.44586944580078,
+      "tflops": 2730.0521946853605
+    },
+    {
+      "index": 10,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 128,
+        "BLOCK_SIZE_N": 128,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264372.638977,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 82.65401458740234,
+      "tflops": 2161.6692232736627,
+      "paired_baseline_ms": 52.56532669067383,
+      "speedup": 0.6359682219075846
+    },
+    {
+      "index": 11,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 128,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264374.5658529,
+      "error": "OutOfResources(214976, 163840, 'shared memory')"
+    },
+    {
+      "index": 12,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 128,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264374.9586422,
+      "error": "OutOfResources(214976, 163840, 'shared memory')"
+    },
+    {
+      "index": 13,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 128,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264375.3502662,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 61.87430953979492,
+      "tflops": 2887.6385181912483
+    },
+    {
+      "index": 14,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 128,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264376.4798055,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 59.95399475097656,
+      "tflops": 2980.1290181867275
+    },
+    {
+      "index": 15,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 128,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264377.6008298,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 62.78112602233887,
+      "tflops": 2845.9291961412923,
+      "paired_baseline_ms": 52.64700698852539,
+      "speedup": 0.8385801645193885
+    },
+    {
+      "index": 16,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 128,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264379.425334,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 62.04249382019043,
+      "tflops": 2879.8107315192315
+    },
+    {
+      "index": 17,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 16,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264380.4984298,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 111.13748168945312,
+      "tflops": 1607.6542026825118
+    },
+    {
+      "index": 18,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264381.9202116,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 52.443084716796875,
+      "tflops": 3406.943746319598
+    },
+    {
+      "index": 19,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264382.9461672,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 61.6882266998291,
+      "tflops": 2896.349094017562
+    },
+    {
+      "index": 20,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 8,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264384.0363398,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 53.010414123535156,
+      "tflops": 3370.481866020269,
+      "paired_baseline_ms": 52.74360656738281,
+      "speedup": 0.9949668841384529
+    },
+    {
+      "index": 21,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 16,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264385.828349,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 57.55781555175781,
+      "tflops": 3104.194240188523
+    },
+    {
+      "index": 22,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264386.8788514,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 53.85675048828125,
+      "tflops": 3317.516149669616
+    },
+    {
+      "index": 23,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": ".ca",
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264387.9347208,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 52.716209411621094,
+      "tflops": 3389.2922406179823
+    }
+  ]
+}

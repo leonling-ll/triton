@@ -1,0 +1,35 @@
+[
+  {
+    "shape": [
+      1024,
+      1024,
+      1024
+    ],
+    "full_output_pass": true,
+    "entries": 1048576,
+    "max_abs_error": 0.0,
+    "exact_match": true
+  },
+  {
+    "shape": [
+      768,
+      1536,
+      16384
+    ],
+    "full_output_pass": true,
+    "entries": 1179648,
+    "max_abs_error": 0.0,
+    "exact_match": true
+  },
+  {
+    "shape": [
+      1056,
+      1088,
+      1024
+    ],
+    "full_output_pass": true,
+    "entries": 1148928,
+    "max_abs_error": 0.0,
+    "exact_match": true
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "source": "/home/leling/issue-investigations/1347/compiler-analysis/oldir-attributor-no-callback.llir",
+  "agpr": "unchanged",
+  "flags": "",
+  "codegen_revision": "08b05a3352eeadd10eba4a25ffc19c2abb226448-2",
+  "inst_sha256": "80716df5c96284a65258c42f60d0787f70d9f0233a80cb1a7c343cb18eb3c72f",
+  "inst_count": 1451,
+  "vgpr_count": 256,
+  "vgpr_spill_count": 33,
+  "sgpr_count": 53,
+  "sgpr_spill_count": 0,
+  "private_segment_fixed_size": 80,
+  "scratch_instructions": 22,
+  "accvgpr_instructions": 240
+}

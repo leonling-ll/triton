@@ -1,0 +1,116 @@
+{
+  "aiter": "ac32ca72ba333703843ab3fa5b7a37056a146813",
+  "triton": "732b3c4c388a0699b0f40bf9e577720b2a4ed45e",
+  "device": "_CudaDeviceProperties(name='AMD Radeon Graphics', major=9, minor=5, gcnArchName='gfx950:sramecc+:xnack-', total_memory=294896MB, multi_processor_count=256, uuid=31363438-6562-3961-3664-373963376565, pci_bus_id=8, pci_device_id=0, pci_domain_id=0, L2_cache_size=4MB)",
+  "results": [
+    {
+      "index": 0,
+      "median_ms": 53.040103912353516,
+      "tflops": 3368.595201262153,
+      "milliseconds": [
+        52.200164794921875,
+        52.68925476074219,
+        52.812137603759766,
+        53.10606384277344,
+        53.040103912353516,
+        53.08350372314453,
+        53.05730438232422
+      ],
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "speedup": 1.0
+    },
+    {
+      "index": 1,
+      "median_ms": 51.972965240478516,
+      "tflops": 3437.7611261334105,
+      "milliseconds": [
+        51.20382308959961,
+        51.52447509765625,
+        51.79523849487305,
+        51.972965240478516,
+        52.0711669921875,
+        52.13408660888672,
+        52.18364715576172
+      ],
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "speedup": 1.0205325724044676
+    },
+    {
+      "index": 2,
+      "median_ms": 51.23719024658203,
+      "tflops": 3487.127975865517,
+      "milliseconds": [
+        50.766536712646484,
+        50.827579498291016,
+        51.0982666015625,
+        51.23719024658203,
+        51.376712799072266,
+        51.455833435058594,
+        51.46155548095703
+      ],
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 8,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "speedup": 1.0351875982483594
+    },
+    {
+      "index": 3,
+      "median_ms": 51.342830657958984,
+      "tflops": 3479.9530377256892,
+      "milliseconds": [
+        50.88058090209961,
+        50.9259033203125,
+        51.342830657958984,
+        51.28171157836914,
+        51.52955627441406,
+        51.51347732543945,
+        51.80936050415039
+      ],
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1,
+        "llvm_fn_attrs": "amdgpu-sched-strategy=iterative-ilp"
+      },
+      "speedup": 1.0330576486072924
+    }
+  ]
+}

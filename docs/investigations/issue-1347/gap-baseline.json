@@ -1,0 +1,96 @@
+{
+  "shape": [
+    51200,
+    106496,
+    16384
+  ],
+  "triton": "3.9.0",
+  "triton_path": "/home/leling/triton/python/triton/__init__.py",
+  "torch": "2.10.0+rocm7.2.4.git3d3aa833",
+  "device": "_CudaDeviceProperties(name='AMD Radeon Graphics', major=9, minor=5, gcnArchName='gfx950:sramecc+:xnack-', total_memory=294896MB, multi_processor_count=256, uuid=64316565-6138-6238-3332-356162376162, pci_bus_id=120, pci_device_id=0, pci_domain_id=0, L2_cache_size=4MB)",
+  "old_preshuffle_env": null,
+  "accumulation_form": "explicit",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "aiter_commit": "ac32ca72ba333703843ab3fa5b7a37056a146813",
+  "triton_commit": "732b3c4c388a0699b0f40bf9e577720b2a4ed45e",
+  "variants": {
+    "unshuffled": {
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "correctness": "32x32 sampled output entries checked against decoded FP32 PyTorch matmul",
+      "milliseconds": [
+        53.42976760864258,
+        53.65697479248047,
+        53.8730583190918,
+        53.73109817504883,
+        53.91058349609375
+      ],
+      "median_ms": 53.73109817504883,
+      "tflops": 3325.2742933247823,
+      "best_round_ms": 53.42976760864258,
+      "best_round_tflops": 3344.028011169919
+    },
+    "scales_only_same_config": {
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "correctness": "32x32 sampled output entries checked against decoded FP32 PyTorch matmul",
+      "milliseconds": [
+        55.6606502532959,
+        55.618207931518555,
+        55.97827911376953,
+        56.03759574890137,
+        56.17352294921875
+      ],
+      "median_ms": 55.97827911376953,
+      "tflops": 3191.785141348703,
+      "best_round_ms": 55.618207931518555,
+      "best_round_tflops": 3212.44869546306
+    },
+    "weights_and_scales_default_config": {
+      "config": {
+        "BLOCK_SIZE_M": 64,
+        "BLOCK_SIZE_N": 128,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 8,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 4,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "correctness": "32x32 sampled output entries checked against decoded FP32 PyTorch matmul",
+      "milliseconds": [
+        75.95564651489258,
+        76.06738662719727,
+        76.18772888183594,
+        76.45745468139648,
+        76.52719497680664
+      ],
+      "median_ms": 76.18772888183594,
+      "tflops": 2345.1367055541305,
+      "best_round_ms": 75.95564651489258,
+      "best_round_tflops": 2352.3022673313453
+    }
+  }
+}

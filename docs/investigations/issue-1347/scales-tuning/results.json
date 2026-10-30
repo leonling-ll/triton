@@ -1,0 +1,423 @@
+{
+  "shape": [
+    51200,
+    106496,
+    16384
+  ],
+  "device": "_CudaDeviceProperties(name='AMD Radeon Graphics', major=9, minor=5, gcnArchName='gfx950:sramecc+:xnack-', total_memory=294896MB, multi_processor_count=256, uuid=64316565-6138-6238-3332-356162376162, pci_bus_id=120, pci_device_id=0, pci_domain_id=0, L2_cache_size=4MB)",
+  "hip_visible_devices": "0",
+  "variants": [
+    {
+      "index": 0,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264439.119157,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 55.3553352355957,
+      "tflops": 3227.7040461080546,
+      "paired_baseline_ms": 55.301456451416016,
+      "speedup": 0.9990266740513741
+    },
+    {
+      "index": 1,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264441.532905,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 56.989566802978516,
+      "tflops": 3135.1464756924934
+    },
+    {
+      "index": 2,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1,
+        "schedule_hint": "mfma-schedule"
+      },
+      "start": 1793264442.6661427,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 55.435462951660156,
+      "tflops": 3223.038647109364
+    },
+    {
+      "index": 3,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1,
+        "llvm_fn_attrs": "amdgpu-sched-strategy=iterative-ilp"
+      },
+      "start": 1793264443.764793,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 55.360260009765625,
+      "tflops": 3227.4169139032633
+    },
+    {
+      "index": 4,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1,
+        "schedule_hint": "mfma-schedule"
+      },
+      "start": 1793264444.848887,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 57.07181167602539,
+      "tflops": 3130.628488330529
+    },
+    {
+      "index": 5,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1,
+        "llvm_fn_attrs": "amdgpu-sched-strategy=iterative-ilp"
+      },
+      "start": 1793264445.9858003,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 56.965213775634766,
+      "tflops": 3136.4867727402657,
+      "paired_baseline_ms": 55.47198486328125,
+      "speedup": 0.9737870041489741
+    },
+    {
+      "index": 6,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 8,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264447.898987,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 55.71562957763672,
+      "tflops": 3206.831563567493
+    },
+    {
+      "index": 7,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264448.9945211,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 62.6298713684082,
+      "tflops": 2852.8022748538674
+    },
+    {
+      "index": 8,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 128,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264450.1268983,
+      "error": "CompilationError('def _gemm_afp4wfp4_kernel_preshuffle_scales(\\n    a_ptr,\\n    b_ptr,\\n    c_ptr,\\n    a_scales_ptr,\\n    b_scales_ptr,\\n    M,\\n    N,\\n    K,\\n    stride_am,\\n    stride_ak,\\n    stride_bk,\\n    stride_bn,\\n    stride_ck,\\n    stride_cm,\\n    stride_cn,\\n    stride_asm,\\n    stride_ask,\\n    stride_bsn,\\n    stride_bsk,\\n    # Meta-parameters\\n    BLOCK_SIZE_M: tl.constexpr,\\n    BLOCK_SIZE_N: tl.constexpr,\\n    BLOCK_SIZE_K: tl.constexpr,\\n    GROUP_SIZE_M: tl.constexpr,\\n    NUM_KSPLIT: tl.constexpr,\\n    SPLITK_BLOCK_SIZE: tl.constexpr,\\n    EVEN_K: tl.constexpr,\\n    num_warps: tl.constexpr,\\n    num_stages: tl.constexpr,\\n    waves_per_eu: tl.constexpr,\\n    matrix_instr_nonkdim: tl.constexpr,\\n    cache_modifier: tl.constexpr,\\n):\\n    \"\"\"\\n    Kernel for computing the matmul C = A x B.\\n    A and B inputs are in the microscale fp4 (mxfp4) format.\\n    A_scales and B_scales are in e8m0 format.\\n    A has shape (M, K), B has shape (K, N) and C has shape (M, N)\\n    \"\"\"\\n\\n    tl.assume(stride_am > 0)\\n    tl.assume(stride_ak > 0)\\n    tl.assume(stride_bk > 0)\\n    tl.assume(stride_bn > 0)\\n    tl.assume(stride_cm > 0)\\n    tl.assume(stride_cn > 0)\\n    tl.assume(stride_asm > 0)\\n    tl.assume(stride_ask > 0)\\n    tl.assume(stride_bsk > 0)\\n    tl.assume(stride_bsn > 0)\\n\\n    GRID_MN = tl.cdiv(M, BLOCK_SIZE_M) * tl.cdiv(N, BLOCK_SIZE_N)\\n\\n    # -----------------------------------------------------------\\n    # Map program ids `pid` to the block of C it should compute.\\n    # This is done in a grouped ordering to promote L2 data reuse.\\n    pid_unified = tl.program_id(axis=0)\\n    pid_unified = remap_xcd(pid_unified, GRID_MN * NUM_KSPLIT, NUM_XCDS=8)\\n    pid_k = pid_unified % NUM_KSPLIT\\n    pid = pid_unified // NUM_KSPLIT\\n    num_pid_m = tl.cdiv(M, BLOCK_SIZE_M)\\n    num_pid_n = tl.cdiv(N, BLOCK_SIZE_N)\\n\\n    if NUM_KSPLIT == 1:\\n        pid_m, pid_n = pid_grid(pid, num_pid_m, num_pid_n, GROUP_SIZE_M=GROUP_SIZE_M)\\n    else:\\n        pid_m = pid // num_pid_n\\n        pid_n = pid % num_pid_n\\n\\n    tl.assume(pid_m >= 0)\\n    tl.assume(pid_n >= 0)\\n    # We assume 32 elements along K share the same scale.\\n    SCALE_GROUP_SIZE: tl.constexpr = 32\\n\\n    if (pid_k * SPLITK_BLOCK_SIZE // 2) < K:\\n\\n        num_k_iter = tl.cdiv(SPLITK_BLOCK_SIZE // 2, BLOCK_SIZE_K // 2)\\n\\n        # Create pointers for first block of A and B input matrices\\n        # The BLOCK sizes are of the elements and in fp4 we pack 2 per uint8 container.\\n        offs_k = tl.arange(0, BLOCK_SIZE_K // 2)\\n        offs_k_split = pid_k * (SPLITK_BLOCK_SIZE // 2) + offs_k\\n        offs_am = (pid_m * BLOCK_SIZE_M + tl.arange(0, BLOCK_SIZE_M)) % M\\n        offs_bn = (pid_n * BLOCK_SIZE_N + tl.arange(0, BLOCK_SIZE_N)) % N\\n        a_ptrs = a_ptr + (\\n            offs_am[:, None] * stride_am + offs_k_split[None, :] * stride_ak\\n        )\\n        b_ptrs = b_ptr + (\\n            offs_k_split[:, None] * stride_bk + offs_bn[None, :] * stride_bn\\n        )\\n        # Create pointers for the first block of A and B scales\\n\\n        offs_asn = (\\n            pid_n * (BLOCK_SIZE_N // 32) + tl.arange(0, (BLOCK_SIZE_N // 32))\\n        ) % N\\n        offs_ks = (pid_k * (SPLITK_BLOCK_SIZE // SCALE_GROUP_SIZE) * 32) + tl.arange(\\n            0, BLOCK_SIZE_K // SCALE_GROUP_SIZE * 32\\n        )\\n        # B scales are N x K even though B operand is K x N.\\n        b_scale_ptrs = (\\n            b_scales_ptr\\n            + offs_asn[:, None] * stride_bsn\\n            + offs_ks[None, :] * stride_bsk\\n        )\\n\\n        if BLOCK_SIZE_M < 32:\\n            offs_ks_non_shufl = (\\n                pid_k * (SPLITK_BLOCK_SIZE // SCALE_GROUP_SIZE)\\n            ) + tl.arange(0, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n            a_scale_ptrs = (\\n                a_scales_ptr\\n                + offs_am[:, None] * stride_asm\\n                + offs_ks_non_shufl[None, :] * stride_ask\\n            )\\n        else:\\n            offs_asm = (\\n                pid_m * (BLOCK_SIZE_M // 32) + tl.arange(0, (BLOCK_SIZE_M // 32))\\n            ) % M\\n            a_scale_ptrs = (\\n                a_scales_ptr\\n                + offs_asm[:, None] * stride_asm\\n                + offs_ks[None, :] * stride_ask\\n            )\\n\\n        accumulator = tl.zeros((BLOCK_SIZE_M, BLOCK_SIZE_N), dtype=tl.float32)\\n        offs_scale_k = tl.arange(0, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n        offs_shuffled_scale_k = tl.arange(0, BLOCK_SIZE_K // SCALE_GROUP_SIZE * 32)\\n\\n        for k in range(pid_k * num_k_iter, (pid_k + 1) * num_k_iter):\\n            # Load scales, masking OOB when K is not aligned to BLOCK_SIZE_K.\\n            # OOB scales could contain 0xFF (NaN in e8m0) which propagates\\n            # through dot_scaled even when the corresponding data is zero.\\n            if EVEN_K:\\n                if BLOCK_SIZE_M < 32:\\n                    a_scales = tl.load(a_scale_ptrs)\\n                else:\\n                    a_scales = (\\n                        tl.load(a_scale_ptrs)\\n                        .reshape(\\n                            BLOCK_SIZE_M // 32,\\n                            BLOCK_SIZE_K // SCALE_GROUP_SIZE // 8,\\n                            4,\\n                            16,\\n                            2,\\n                            2,\\n                            1,\\n                        )\\n                        .permute(0, 5, 3, 1, 4, 2, 6)\\n                        .reshape(BLOCK_SIZE_M, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n                    )\\n                b_scales = (\\n                    tl.load(b_scale_ptrs, cache_modifier=cache_modifier)\\n                    .reshape(\\n                        BLOCK_SIZE_N // 32,\\n                        BLOCK_SIZE_K // SCALE_GROUP_SIZE // 8,\\n                        4,\\n                        16,\\n                        2,\\n                        2,\\n                        1,\\n                    )\\n                    .permute(0, 5, 3, 1, 4, 2, 6)\\n                    .reshape(BLOCK_SIZE_N, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n                )\\n            else:\\n                shuffled_scale_mask = offs_shuffled_scale_k[None, :] < (\\n                    2 * K - k * BLOCK_SIZE_K\\n                )\\n                if BLOCK_SIZE_M < 32:\\n                    a_scale_mask = offs_scale_k[None, :] < (\\n                        2 * K // SCALE_GROUP_SIZE\\n                        - k * (BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n                    )\\n                    a_scales = tl.load(a_scale_ptrs, mask=a_scale_mask, other=127)\\n                else:\\n                    a_scales = (\\n                        tl.load(a_scale_ptrs, mask=shuffled_scale_mask, other=127)\\n                        .reshape(\\n                            BLOCK_SIZE_M // 32,\\n                            BLOCK_SIZE_K // SCALE_GROUP_SIZE // 8,\\n                            4,\\n                            16,\\n                            2,\\n                            2,\\n                            1,\\n                        )\\n                        .permute(0, 5, 3, 1, 4, 2, 6)\\n                        .reshape(BLOCK_SIZE_M, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n                    )\\n                b_scales = (\\n                    tl.load(\\n                        b_scale_ptrs,\\n                        mask=shuffled_scale_mask,\\n                        other=127,\\n                        cache_modifier=cache_modifier,\\n                    )\\n                    .reshape(\\n                        BLOCK_SIZE_N // 32,\\n                        BLOCK_SIZE_K // SCALE_GROUP_SIZE // 8,\\n                        4,\\n                        16,\\n                        2,\\n                        2,\\n                        1,\\n                    )\\n                    .permute(0, 5, 3, 1, 4, 2, 6)\\n                    .reshape(BLOCK_SIZE_N, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n                )\\n\\n            # Load the next block of A and B, generate a mask by checking the K dimension.\\n            # If it is out of bounds, set it to 0.\\n            if EVEN_K:\\n                a = tl.load(a_ptrs)\\n                b = tl.load(b_ptrs, cache_modifier=cache_modifier)\\n            else:\\n                a = tl.load(\\n                    a_ptrs, mask=offs_k[None, :] < K - k * (BLOCK_SIZE_K // 2), other=0\\n                )\\n                b = tl.load(\\n                    b_ptrs, mask=offs_k[:, None] < K - k * (BLOCK_SIZE_K // 2), other=0\\n                )\\n\\n            accumulator = tl.dot_scaled(\\n                a, a_scales, \"e2m1\", b, b_scales, \"e2m1\", accumulator\\n            )\\n\\n            # Advance the ptrs to the next K block.\\n            a_ptrs += (BLOCK_SIZE_K // 2) * stride_ak\\n            b_ptrs += (BLOCK_SIZE_K // 2) * stride_bk\\n            if BLOCK_SIZE_M < 32:\\n                a_scale_ptrs += (BLOCK_SIZE_K // SCALE_GROUP_SIZE) * stride_ask\\n            else:\\n                a_scale_ptrs += BLOCK_SIZE_K * stride_ask\\n            b_scale_ptrs += BLOCK_SIZE_K * stride_bsk\\n\\n        c = accumulator.to(c_ptr.type.element_ty)\\n\\n        # Write back the block of the output matrix C with masks.\\n        offs_cm = pid_m * BLOCK_SIZE_M + tl.arange(0, BLOCK_SIZE_M).to(tl.int64)\\n        offs_cn = pid_n * BLOCK_SIZE_N + tl.arange(0, BLOCK_SIZE_N).to(tl.int64)\\n        c_ptrs = (\\n            c_ptr\\n            + stride_cm * offs_cm[:, None]\\n            + stride_cn * offs_cn[None, :]\\n            + pid_k.to(tl.int64) * stride_ck\\n        )\\n        c_mask = (offs_cm[:, None] < M) & (offs_cn[None, :] < N)\\n        tl.store(c_ptrs, c, mask=c_mask, cache_modifier=\".wt\")\\n', <ast.Call object at 0x7941a07827d0>, 'Shape element 1 must be a power of 2')"
+    },
+    {
+      "index": 9,
+      "round": 0,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 8,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264450.1453636,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 56.70048904418945,
+      "tflops": 3151.1304845069903
+    },
+    {
+      "index": 9,
+      "round": 1,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 8,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264451.2936504,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 56.705406188964844,
+      "tflops": 3150.8572378125423
+    },
+    {
+      "index": 8,
+      "round": 1,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 128,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264452.1451924,
+      "error": "CompilationError('def _gemm_afp4wfp4_kernel_preshuffle_scales(\\n    a_ptr,\\n    b_ptr,\\n    c_ptr,\\n    a_scales_ptr,\\n    b_scales_ptr,\\n    M,\\n    N,\\n    K,\\n    stride_am,\\n    stride_ak,\\n    stride_bk,\\n    stride_bn,\\n    stride_ck,\\n    stride_cm,\\n    stride_cn,\\n    stride_asm,\\n    stride_ask,\\n    stride_bsn,\\n    stride_bsk,\\n    # Meta-parameters\\n    BLOCK_SIZE_M: tl.constexpr,\\n    BLOCK_SIZE_N: tl.constexpr,\\n    BLOCK_SIZE_K: tl.constexpr,\\n    GROUP_SIZE_M: tl.constexpr,\\n    NUM_KSPLIT: tl.constexpr,\\n    SPLITK_BLOCK_SIZE: tl.constexpr,\\n    EVEN_K: tl.constexpr,\\n    num_warps: tl.constexpr,\\n    num_stages: tl.constexpr,\\n    waves_per_eu: tl.constexpr,\\n    matrix_instr_nonkdim: tl.constexpr,\\n    cache_modifier: tl.constexpr,\\n):\\n    \"\"\"\\n    Kernel for computing the matmul C = A x B.\\n    A and B inputs are in the microscale fp4 (mxfp4) format.\\n    A_scales and B_scales are in e8m0 format.\\n    A has shape (M, K), B has shape (K, N) and C has shape (M, N)\\n    \"\"\"\\n\\n    tl.assume(stride_am > 0)\\n    tl.assume(stride_ak > 0)\\n    tl.assume(stride_bk > 0)\\n    tl.assume(stride_bn > 0)\\n    tl.assume(stride_cm > 0)\\n    tl.assume(stride_cn > 0)\\n    tl.assume(stride_asm > 0)\\n    tl.assume(stride_ask > 0)\\n    tl.assume(stride_bsk > 0)\\n    tl.assume(stride_bsn > 0)\\n\\n    GRID_MN = tl.cdiv(M, BLOCK_SIZE_M) * tl.cdiv(N, BLOCK_SIZE_N)\\n\\n    # -----------------------------------------------------------\\n    # Map program ids `pid` to the block of C it should compute.\\n    # This is done in a grouped ordering to promote L2 data reuse.\\n    pid_unified = tl.program_id(axis=0)\\n    pid_unified = remap_xcd(pid_unified, GRID_MN * NUM_KSPLIT, NUM_XCDS=8)\\n    pid_k = pid_unified % NUM_KSPLIT\\n    pid = pid_unified // NUM_KSPLIT\\n    num_pid_m = tl.cdiv(M, BLOCK_SIZE_M)\\n    num_pid_n = tl.cdiv(N, BLOCK_SIZE_N)\\n\\n    if NUM_KSPLIT == 1:\\n        pid_m, pid_n = pid_grid(pid, num_pid_m, num_pid_n, GROUP_SIZE_M=GROUP_SIZE_M)\\n    else:\\n        pid_m = pid // num_pid_n\\n        pid_n = pid % num_pid_n\\n\\n    tl.assume(pid_m >= 0)\\n    tl.assume(pid_n >= 0)\\n    # We assume 32 elements along K share the same scale.\\n    SCALE_GROUP_SIZE: tl.constexpr = 32\\n\\n    if (pid_k * SPLITK_BLOCK_SIZE // 2) < K:\\n\\n        num_k_iter = tl.cdiv(SPLITK_BLOCK_SIZE // 2, BLOCK_SIZE_K // 2)\\n\\n        # Create pointers for first block of A and B input matrices\\n        # The BLOCK sizes are of the elements and in fp4 we pack 2 per uint8 container.\\n        offs_k = tl.arange(0, BLOCK_SIZE_K // 2)\\n        offs_k_split = pid_k * (SPLITK_BLOCK_SIZE // 2) + offs_k\\n        offs_am = (pid_m * BLOCK_SIZE_M + tl.arange(0, BLOCK_SIZE_M)) % M\\n        offs_bn = (pid_n * BLOCK_SIZE_N + tl.arange(0, BLOCK_SIZE_N)) % N\\n        a_ptrs = a_ptr + (\\n            offs_am[:, None] * stride_am + offs_k_split[None, :] * stride_ak\\n        )\\n        b_ptrs = b_ptr + (\\n            offs_k_split[:, None] * stride_bk + offs_bn[None, :] * stride_bn\\n        )\\n        # Create pointers for the first block of A and B scales\\n\\n        offs_asn = (\\n            pid_n * (BLOCK_SIZE_N // 32) + tl.arange(0, (BLOCK_SIZE_N // 32))\\n        ) % N\\n        offs_ks = (pid_k * (SPLITK_BLOCK_SIZE // SCALE_GROUP_SIZE) * 32) + tl.arange(\\n            0, BLOCK_SIZE_K // SCALE_GROUP_SIZE * 32\\n        )\\n        # B scales are N x K even though B operand is K x N.\\n        b_scale_ptrs = (\\n            b_scales_ptr\\n            + offs_asn[:, None] * stride_bsn\\n            + offs_ks[None, :] * stride_bsk\\n        )\\n\\n        if BLOCK_SIZE_M < 32:\\n            offs_ks_non_shufl = (\\n                pid_k * (SPLITK_BLOCK_SIZE // SCALE_GROUP_SIZE)\\n            ) + tl.arange(0, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n            a_scale_ptrs = (\\n                a_scales_ptr\\n                + offs_am[:, None] * stride_asm\\n                + offs_ks_non_shufl[None, :] * stride_ask\\n            )\\n        else:\\n            offs_asm = (\\n                pid_m * (BLOCK_SIZE_M // 32) + tl.arange(0, (BLOCK_SIZE_M // 32))\\n            ) % M\\n            a_scale_ptrs = (\\n                a_scales_ptr\\n                + offs_asm[:, None] * stride_asm\\n                + offs_ks[None, :] * stride_ask\\n            )\\n\\n        accumulator = tl.zeros((BLOCK_SIZE_M, BLOCK_SIZE_N), dtype=tl.float32)\\n        offs_scale_k = tl.arange(0, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n        offs_shuffled_scale_k = tl.arange(0, BLOCK_SIZE_K // SCALE_GROUP_SIZE * 32)\\n\\n        for k in range(pid_k * num_k_iter, (pid_k + 1) * num_k_iter):\\n            # Load scales, masking OOB when K is not aligned to BLOCK_SIZE_K.\\n            # OOB scales could contain 0xFF (NaN in e8m0) which propagates\\n            # through dot_scaled even when the corresponding data is zero.\\n            if EVEN_K:\\n                if BLOCK_SIZE_M < 32:\\n                    a_scales = tl.load(a_scale_ptrs)\\n                else:\\n                    a_scales = (\\n                        tl.load(a_scale_ptrs)\\n                        .reshape(\\n                            BLOCK_SIZE_M // 32,\\n                            BLOCK_SIZE_K // SCALE_GROUP_SIZE // 8,\\n                            4,\\n                            16,\\n                            2,\\n                            2,\\n                            1,\\n                        )\\n                        .permute(0, 5, 3, 1, 4, 2, 6)\\n                        .reshape(BLOCK_SIZE_M, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n                    )\\n                b_scales = (\\n                    tl.load(b_scale_ptrs, cache_modifier=cache_modifier)\\n                    .reshape(\\n                        BLOCK_SIZE_N // 32,\\n                        BLOCK_SIZE_K // SCALE_GROUP_SIZE // 8,\\n                        4,\\n                        16,\\n                        2,\\n                        2,\\n                        1,\\n                    )\\n                    .permute(0, 5, 3, 1, 4, 2, 6)\\n                    .reshape(BLOCK_SIZE_N, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n                )\\n            else:\\n                shuffled_scale_mask = offs_shuffled_scale_k[None, :] < (\\n                    2 * K - k * BLOCK_SIZE_K\\n                )\\n                if BLOCK_SIZE_M < 32:\\n                    a_scale_mask = offs_scale_k[None, :] < (\\n                        2 * K // SCALE_GROUP_SIZE\\n                        - k * (BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n                    )\\n                    a_scales = tl.load(a_scale_ptrs, mask=a_scale_mask, other=127)\\n                else:\\n                    a_scales = (\\n                        tl.load(a_scale_ptrs, mask=shuffled_scale_mask, other=127)\\n                        .reshape(\\n                            BLOCK_SIZE_M // 32,\\n                            BLOCK_SIZE_K // SCALE_GROUP_SIZE // 8,\\n                            4,\\n                            16,\\n                            2,\\n                            2,\\n                            1,\\n                        )\\n                        .permute(0, 5, 3, 1, 4, 2, 6)\\n                        .reshape(BLOCK_SIZE_M, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n                    )\\n                b_scales = (\\n                    tl.load(\\n                        b_scale_ptrs,\\n                        mask=shuffled_scale_mask,\\n                        other=127,\\n                        cache_modifier=cache_modifier,\\n                    )\\n                    .reshape(\\n                        BLOCK_SIZE_N // 32,\\n                        BLOCK_SIZE_K // SCALE_GROUP_SIZE // 8,\\n                        4,\\n                        16,\\n                        2,\\n                        2,\\n                        1,\\n                    )\\n                    .permute(0, 5, 3, 1, 4, 2, 6)\\n                    .reshape(BLOCK_SIZE_N, BLOCK_SIZE_K // SCALE_GROUP_SIZE)\\n                )\\n\\n            # Load the next block of A and B, generate a mask by checking the K dimension.\\n            # If it is out of bounds, set it to 0.\\n            if EVEN_K:\\n                a = tl.load(a_ptrs)\\n                b = tl.load(b_ptrs, cache_modifier=cache_modifier)\\n            else:\\n                a = tl.load(\\n                    a_ptrs, mask=offs_k[None, :] < K - k * (BLOCK_SIZE_K // 2), other=0\\n                )\\n                b = tl.load(\\n                    b_ptrs, mask=offs_k[:, None] < K - k * (BLOCK_SIZE_K // 2), other=0\\n                )\\n\\n            accumulator = tl.dot_scaled(\\n                a, a_scales, \"e2m1\", b, b_scales, \"e2m1\", accumulator\\n            )\\n\\n            # Advance the ptrs to the next K block.\\n            a_ptrs += (BLOCK_SIZE_K // 2) * stride_ak\\n            b_ptrs += (BLOCK_SIZE_K // 2) * stride_bk\\n            if BLOCK_SIZE_M < 32:\\n                a_scale_ptrs += (BLOCK_SIZE_K // SCALE_GROUP_SIZE) * stride_ask\\n            else:\\n                a_scale_ptrs += BLOCK_SIZE_K * stride_ask\\n            b_scale_ptrs += BLOCK_SIZE_K * stride_bsk\\n\\n        c = accumulator.to(c_ptr.type.element_ty)\\n\\n        # Write back the block of the output matrix C with masks.\\n        offs_cm = pid_m * BLOCK_SIZE_M + tl.arange(0, BLOCK_SIZE_M).to(tl.int64)\\n        offs_cn = pid_n * BLOCK_SIZE_N + tl.arange(0, BLOCK_SIZE_N).to(tl.int64)\\n        c_ptrs = (\\n            c_ptr\\n            + stride_cm * offs_cm[:, None]\\n            + stride_cn * offs_cn[None, :]\\n            + pid_k.to(tl.int64) * stride_ck\\n        )\\n        c_mask = (offs_cm[:, None] < M) & (offs_cn[None, :] < N)\\n        tl.store(c_ptrs, c, mask=c_mask, cache_modifier=\".wt\")\\n', <ast.Call object at 0x7941a02568d0>, 'Shape element 1 must be a power of 2')"
+    },
+    {
+      "index": 7,
+      "round": 1,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264452.1568317,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 62.680734634399414,
+      "tflops": 2850.4873236687454
+    },
+    {
+      "index": 6,
+      "round": 1,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 8,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264453.0319533,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 55.83831024169922,
+      "tflops": 3199.7859308459415
+    },
+    {
+      "index": 5,
+      "round": 1,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1,
+        "llvm_fn_attrs": "amdgpu-sched-strategy=iterative-ilp"
+      },
+      "start": 1793264453.8732858,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 57.31127738952637,
+      "tflops": 3117.5476738937955,
+      "paired_baseline_ms": 55.976837158203125,
+      "speedup": 0.9767159223785316
+    },
+    {
+      "index": 4,
+      "round": 1,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1,
+        "schedule_hint": "mfma-schedule"
+      },
+      "start": 1793264455.4597976,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 57.35099792480469,
+      "tflops": 3115.3885020076304
+    },
+    {
+      "index": 3,
+      "round": 1,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1,
+        "llvm_fn_attrs": "amdgpu-sched-strategy=iterative-ilp"
+      },
+      "start": 1793264456.26215,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 55.91351318359375,
+      "tflops": 3195.4822607359592
+    },
+    {
+      "index": 2,
+      "round": 1,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1,
+        "schedule_hint": "mfma-schedule"
+      },
+      "start": 1793264457.0996494,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 56.1927604675293,
+      "tflops": 3179.602461723587
+    },
+    {
+      "index": 1,
+      "round": 1,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264457.944235,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 57.12351608276367,
+      "tflops": 3127.7948516812626
+    },
+    {
+      "index": 0,
+      "round": 1,
+      "config": {
+        "BLOCK_SIZE_M": 256,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 4,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 1,
+        "matrix_instr_nonkdim": 16,
+        "cache_modifier": null,
+        "NUM_KSPLIT": 1
+      },
+      "start": 1793264458.7461739,
+      "correctness": "32x32 sampled FP32 reference pass",
+      "ms": 56.21620178222656,
+      "tflops": 3178.276615089441,
+      "paired_baseline_ms": 56.31467819213867,
+      "speedup": 1.0017517442799424
+    }
+  ]
+}

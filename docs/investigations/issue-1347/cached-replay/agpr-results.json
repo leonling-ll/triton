@@ -1,0 +1,106 @@
+{
+  "shape": [
+    51200,
+    106496,
+    16384
+  ],
+  "device": "_CudaDeviceProperties(name='AMD Radeon Graphics', major=9, minor=5, gcnArchName='gfx950:sramecc+:xnack-', total_memory=294896MB, multi_processor_count=256, uuid=37326230-3838-6562-6134-306164376132, pci_bus_id=104, pci_device_id=0, pci_domain_id=0, L2_cache_size=4MB)",
+  "started": 1793264543.2524476,
+  "variants": {
+    "current": {
+      "metadata": "/home/leling/issue-investigations/1347/cache-gap-baseline/LASRUDXUCJIAX5UAEJOX6TVWOLJLP56HIAHVYUS4XVK7CY6P2VIA/_gemm_afp4wfp4_kernel.json",
+      "hsaco_sha256": "77ffc7fd011cf0d04a1cc9f1139110625ec7f1a0cec868ca71ec5bc78a09dc7f",
+      "n_regs": 224,
+      "n_spills": 0,
+      "shared": 143296,
+      "correctness": "passed 32x32 samples vs decoded FP32 matmul",
+      "ms": [
+        52.942928314208984,
+        53.36894226074219,
+        53.31326675415039,
+        53.21370315551758,
+        53.481910705566406,
+        53.52391052246094,
+        53.669315338134766
+      ],
+      "median_ms": 53.36894226074219,
+      "median_tflops": 3347.8392477909174
+    },
+    "oldir-newcodegen-agpr-unchanged": {
+      "metadata": "/home/leling/issue-investigations/1347/cached-replay/generated/oldir-newcodegen-agpr-unchanged/_gemm_afp4wfp4_kernel.json",
+      "hsaco_sha256": "2ffcb0af810e09fcde10f6016dbd39b77622ed6645e2479609f06e8facb11ec1",
+      "n_regs": 256,
+      "n_spills": 20,
+      "shared": 143296,
+      "correctness": "passed 32x32 samples vs decoded FP32 matmul",
+      "ms": [
+        82.95512390136719,
+        84.04557037353516,
+        83.36456298828125,
+        83.55752563476562,
+        83.5795669555664,
+        83.58969116210938,
+        83.7176513671875
+      ],
+      "median_ms": 83.5795669555664,
+      "median_tflops": 2137.731098901088
+    },
+    "oldir-newcodegen-agpr-0": {
+      "metadata": "/home/leling/issue-investigations/1347/cached-replay/generated/oldir-newcodegen-agpr-0/_gemm_afp4wfp4_kernel.json",
+      "hsaco_sha256": "a360e2a62c452f4a2bc531d0e710c44773f1a0a838ff3f40fa30af65e8c46044",
+      "n_regs": 224,
+      "n_spills": 0,
+      "shared": 143296,
+      "correctness": "passed 32x32 samples vs decoded FP32 matmul",
+      "ms": [
+        53.043617248535156,
+        53.385704040527344,
+        53.41282653808594,
+        53.4411506652832,
+        53.52263259887695,
+        53.69663619995117,
+        53.60235595703125
+      ],
+      "median_ms": 53.4411506652832,
+      "median_tflops": 3343.315727474955
+    },
+    "currentir-agpr-unchanged": {
+      "metadata": "/home/leling/issue-investigations/1347/cached-replay/generated/currentir-agpr-unchanged/_gemm_afp4wfp4_kernel.json",
+      "hsaco_sha256": "77ffc7fd011cf0d04a1cc9f1139110625ec7f1a0cec868ca71ec5bc78a09dc7f",
+      "n_regs": 224,
+      "n_spills": 0,
+      "shared": 143296,
+      "correctness": "passed 32x32 samples vs decoded FP32 matmul",
+      "ms": [
+        53.08981704711914,
+        53.26874542236328,
+        53.301822662353516,
+        53.23258590698242,
+        53.49787139892578,
+        53.561431884765625,
+        53.60307693481445
+      ],
+      "median_ms": 53.301822662353516,
+      "median_tflops": 3352.0549690281623
+    },
+    "currentir-agpr-remove": {
+      "metadata": "/home/leling/issue-investigations/1347/cached-replay/generated/currentir-agpr-remove/_gemm_afp4wfp4_kernel.json",
+      "hsaco_sha256": "9532ffefd4c4ca129017d332a1b6577087893f4b2f5177f334d2fce0c2c090c6",
+      "n_regs": 256,
+      "n_spills": 19,
+      "shared": 143296,
+      "correctness": "passed 32x32 samples vs decoded FP32 matmul",
+      "ms": [
+        86.23133087158203,
+        86.23709106445312,
+        86.30001831054688,
+        86.50697326660156,
+        86.7903823852539,
+        86.81114959716797,
+        86.87422943115234
+      ],
+      "median_ms": 86.50697326660156,
+      "median_tflops": 2065.390023102112
+    }
+  }
+}

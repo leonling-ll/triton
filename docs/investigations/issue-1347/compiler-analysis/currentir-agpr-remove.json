@@ -1,0 +1,15 @@
+{
+  "source": "/home/leling/issue-investigations/1347/cache-gap-baseline/LASRUDXUCJIAX5UAEJOX6TVWOLJLP56HIAHVYUS4XVK7CY6P2VIA/_gemm_afp4wfp4_kernel.llir",
+  "agpr": "remove",
+  "flags": "",
+  "codegen_revision": "08b05a3352eeadd10eba4a25ffc19c2abb226448-2",
+  "inst_sha256": "779f2ac1ded4285b9a7eceda599bc551bee4b01fa77446f419af73678a3130b6",
+  "inst_count": 1417,
+  "vgpr_count": 256,
+  "vgpr_spill_count": 34,
+  "sgpr_count": 51,
+  "sgpr_spill_count": 0,
+  "private_segment_fixed_size": 76,
+  "scratch_instructions": 20,
+  "accvgpr_instructions": 210
+}

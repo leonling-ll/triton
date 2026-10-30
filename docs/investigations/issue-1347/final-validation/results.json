@@ -1,0 +1,301 @@
+{
+  "shape": [
+    51200,
+    106496,
+    16384
+  ],
+  "device": "_CudaDeviceProperties(name='AMD Radeon Graphics', major=9, minor=5, gcnArchName='gfx950:sramecc+:xnack-', total_memory=294896MB, multi_processor_count=256, uuid=64316565-6138-6238-3332-356162376162, pci_bus_id=120, pci_device_id=0, pci_domain_id=0, L2_cache_size=4MB)",
+  "hip_visible_devices": "0",
+  "configs": {
+    "default": {
+      "BLOCK_SIZE_M": 256,
+      "BLOCK_SIZE_N": 256,
+      "BLOCK_SIZE_K": 256,
+      "GROUP_SIZE_M": 4,
+      "num_warps": 8,
+      "num_stages": 2,
+      "waves_per_eu": 1,
+      "matrix_instr_nonkdim": 16,
+      "cache_modifier": null,
+      "NUM_KSPLIT": 1
+    },
+    "mfma32_group8": {
+      "BLOCK_SIZE_M": 256,
+      "BLOCK_SIZE_N": 256,
+      "BLOCK_SIZE_K": 256,
+      "GROUP_SIZE_M": 8,
+      "num_warps": 8,
+      "num_stages": 2,
+      "waves_per_eu": 1,
+      "matrix_instr_nonkdim": 32,
+      "cache_modifier": null,
+      "NUM_KSPLIT": 1
+    }
+  },
+  "triton_commit": "732b3c4c388a0699b0f40bf9e577720b2a4ed45e",
+  "aiter_commit": "ac32ca72ba333703843ab3fa5b7a37056a146813",
+  "measurements": [
+    {
+      "mode": "events",
+      "round": 0,
+      "variant": "default",
+      "start": 1793264579.5613587,
+      "end": 1793264580.4180157,
+      "ms": 53.52739715576172,
+      "tflops": 3337.9287805397767
+    },
+    {
+      "mode": "events",
+      "round": 0,
+      "variant": "mfma32_group8",
+      "start": 1793264580.418287,
+      "end": 1793264581.244121,
+      "ms": 51.61083984375,
+      "tflops": 3461.882039790848
+    },
+    {
+      "mode": "events",
+      "round": 1,
+      "variant": "mfma32_group8",
+      "start": 1793264581.2444508,
+      "end": 1793264582.0705261,
+      "ms": 51.584320068359375,
+      "tflops": 3463.6618118999386
+    },
+    {
+      "mode": "events",
+      "round": 1,
+      "variant": "default",
+      "start": 1793264582.0708137,
+      "end": 1793264582.9315383,
+      "ms": 53.62335968017578,
+      "tflops": 3331.955337734152
+    },
+    {
+      "mode": "events",
+      "round": 2,
+      "variant": "default",
+      "start": 1793264582.931801,
+      "end": 1793264583.7919,
+      "ms": 53.70935821533203,
+      "tflops": 3326.6202660115973
+    },
+    {
+      "mode": "events",
+      "round": 2,
+      "variant": "mfma32_group8",
+      "start": 1793264583.7921817,
+      "end": 1793264584.6215348,
+      "ms": 51.862648010253906,
+      "tflops": 3445.0736005279664
+    },
+    {
+      "mode": "events",
+      "round": 3,
+      "variant": "mfma32_group8",
+      "start": 1793264584.621819,
+      "end": 1793264585.4516494,
+      "ms": 51.84040832519531,
+      "tflops": 3446.5515470633954
+    },
+    {
+      "mode": "events",
+      "round": 3,
+      "variant": "default",
+      "start": 1793264585.4519415,
+      "end": 1793264586.3151453,
+      "ms": 54.1702880859375,
+      "tflops": 3298.314368019441
+    },
+    {
+      "mode": "events",
+      "round": 4,
+      "variant": "default",
+      "start": 1793264586.3154159,
+      "end": 1793264587.1792746,
+      "ms": 53.99192428588867,
+      "tflops": 3309.2104398341917
+    },
+    {
+      "mode": "events",
+      "round": 4,
+      "variant": "mfma32_group8",
+      "start": 1793264587.1795743,
+      "end": 1793264588.0116317,
+      "ms": 52.04016876220703,
+      "tflops": 3433.321677529905
+    },
+    {
+      "mode": "events",
+      "round": 5,
+      "variant": "mfma32_group8",
+      "start": 1793264588.0119407,
+      "end": 1793264588.8448207,
+      "ms": 52.03888702392578,
+      "tflops": 3433.4062415949265
+    },
+    {
+      "mode": "events",
+      "round": 5,
+      "variant": "default",
+      "start": 1793264588.8451192,
+      "end": 1793264589.7108178,
+      "ms": 54.067928314208984,
+      "tflops": 3304.5586373363153
+    },
+    {
+      "mode": "events",
+      "round": 6,
+      "variant": "default",
+      "start": 1793264589.7111402,
+      "end": 1793264590.57821,
+      "ms": 54.0493278503418,
+      "tflops": 3305.695863754763
+    },
+    {
+      "mode": "events",
+      "round": 6,
+      "variant": "mfma32_group8",
+      "start": 1793264590.578528,
+      "end": 1793264591.4135334,
+      "ms": 52.16149139404297,
+      "tflops": 3425.3361002251722
+    },
+    {
+      "mode": "graph",
+      "round": 0,
+      "variant": "default",
+      "start": 1793264591.4138541,
+      "end": 1793264598.8157728,
+      "ms": 54.42582885742188,
+      "tflops": 3282.828084835593
+    },
+    {
+      "mode": "graph",
+      "round": 0,
+      "variant": "mfma32_group8",
+      "start": 1793264598.8163166,
+      "end": 1793264605.9565687,
+      "ms": 52.47731994628906,
+      "tflops": 3404.721119456382
+    },
+    {
+      "mode": "graph",
+      "round": 1,
+      "variant": "mfma32_group8",
+      "start": 1793264605.957126,
+      "end": 1793264613.0935168,
+      "ms": 52.440969238281255,
+      "tflops": 3407.081183068078
+    },
+    {
+      "mode": "graph",
+      "round": 1,
+      "variant": "default",
+      "start": 1793264613.0940442,
+      "end": 1793264620.4952252,
+      "ms": 54.426897583007815,
+      "tflops": 3282.763623282128
+    },
+    {
+      "mode": "graph",
+      "round": 2,
+      "variant": "default",
+      "start": 1793264620.495794,
+      "end": 1793264627.8970962,
+      "ms": 54.42474426269531,
+      "tflops": 3282.8935061449124
+    },
+    {
+      "mode": "graph",
+      "round": 2,
+      "variant": "mfma32_group8",
+      "start": 1793264627.8976414,
+      "end": 1793264635.0264397,
+      "ms": 52.41549011230469,
+      "tflops": 3408.737362386249
+    }
+  ],
+  "correctness": [
+    {
+      "buffer": 0,
+      "variant": "default",
+      "check": "4096 samples vs decoded FP32 matmul",
+      "passed": true
+    },
+    {
+      "buffer": 0,
+      "variant": "mfma32_group8",
+      "check": "4096 samples vs decoded FP32 matmul",
+      "passed": true
+    },
+    {
+      "buffer": 1,
+      "variant": "default",
+      "check": "4096 samples vs decoded FP32 matmul",
+      "passed": true
+    },
+    {
+      "buffer": 1,
+      "variant": "mfma32_group8",
+      "check": "4096 samples vs decoded FP32 matmul",
+      "passed": true
+    },
+    {
+      "buffer": 2,
+      "variant": "default",
+      "check": "4096 samples vs decoded FP32 matmul",
+      "passed": true
+    },
+    {
+      "buffer": 2,
+      "variant": "mfma32_group8",
+      "check": "4096 samples vs decoded FP32 matmul",
+      "passed": true
+    },
+    {
+      "buffer": 3,
+      "variant": "default",
+      "check": "4096 samples vs decoded FP32 matmul",
+      "passed": true
+    },
+    {
+      "buffer": 3,
+      "variant": "mfma32_group8",
+      "check": "4096 samples vs decoded FP32 matmul",
+      "passed": true
+    }
+  ],
+  "graph_settings": {
+    "pool_len": 4,
+    "kernels_per_graph": 10,
+    "num_replays": 10,
+    "warmup_replays": 3
+  },
+  "summary": {
+    "events": {
+      "default": {
+        "median_ms": 53.99192428588867,
+        "median_tflops": 3309.2104398341917,
+        "best_tflops": 3337.9287805397767
+      },
+      "mfma32_group8": {
+        "median_ms": 51.862648010253906,
+        "median_tflops": 3445.0736005279664,
+        "best_tflops": 3463.6618118999386
+      }
+    },
+    "graph": {
+      "default": {
+        "median_ms": 54.42582885742188,
+        "median_tflops": 3282.828084835593,
+        "best_tflops": 3282.8935061449124
+      },
+      "mfma32_group8": {
+        "median_ms": 52.440969238281255,
+        "median_tflops": 3407.081183068078,
+        "best_tflops": 3408.737362386249
+      }
+    }
+  }
+}

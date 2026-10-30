@@ -1,0 +1,68 @@
+{
+  "shape": [
+    51200,
+    106496,
+    16384
+  ],
+  "device": "_CudaDeviceProperties(name='AMD Radeon Graphics', major=9, minor=5, gcnArchName='gfx950:sramecc+:xnack-', total_memory=294896MB, multi_processor_count=256, uuid=37326230-3838-6562-6134-306164376132, pci_bus_id=104, pci_device_id=0, pci_domain_id=0, L2_cache_size=4MB)",
+  "started": 1793264612.9172006,
+  "variants": {
+    "oct27": {
+      "metadata": "/home/leling/issue-investigations/1347/cache-explicit/SR2KB6KIFH7352QSUFOWGH22YZ3ZN4WBCTODEBBXUY6TJUYX3YUA/_gemm_afp4wfp4_kernel_preshuffle_scales.json",
+      "hsaco_sha256": "018942e8e191214f471f6dc4b36679896854e6c9ffe3ca298e8896c45fc6484c",
+      "n_regs": 226,
+      "n_spills": 0,
+      "shared": 143296,
+      "correctness": "passed 32x32 samples vs decoded FP32 matmul",
+      "ms": [
+        55.340152740478516,
+        55.51335906982422,
+        55.58760070800781,
+        55.49248123168945,
+        55.53852462768555,
+        55.566322326660156,
+        55.39739990234375
+      ],
+      "median_ms": 55.51335906982422,
+      "median_tflops": 3218.5160924755
+    },
+    "oct29": {
+      "metadata": "/home/leling/issue-investigations/1347/cache-20261029/7CP4B6AQ6GMCIMRA7IMTAYPMBFKOJWTNCJSC42IOHLFKQMPJZJIQ/_gemm_afp4wfp4_kernel_preshuffle_scales.json",
+      "hsaco_sha256": "9fa4449831040a1079cd7de75f29daf326b94830e09689a934df393b1a263afa",
+      "n_regs": 256,
+      "n_spills": 5,
+      "shared": 143296,
+      "correctness": "passed 32x32 samples vs decoded FP32 matmul",
+      "ms": [
+        72.67753982543945,
+        72.81111145019531,
+        72.9696159362793,
+        72.70855331420898,
+        72.74581527709961,
+        72.87979888916016,
+        73.16934204101562
+      ],
+      "median_ms": 72.81111145019531,
+      "median_tflops": 2453.892489140416
+    },
+    "current": {
+      "metadata": "/home/leling/issue-investigations/1347/cache-gap-baseline/FR62SXYNH23GYKAOWGVMC7AQKNTTVBR5WQE362BHVEKKV4DJSY3Q/_gemm_afp4wfp4_kernel_preshuffle_scales.json",
+      "hsaco_sha256": "5e6147dac4a06fc44790f550506d21dd8fd60c8e076ce9116ac5bb2633dcb3ee",
+      "n_regs": 222,
+      "n_spills": 0,
+      "shared": 143296,
+      "correctness": "passed 32x32 samples vs decoded FP32 matmul",
+      "ms": [
+        54.68217849731445,
+        54.74814224243164,
+        54.76614761352539,
+        54.85047149658203,
+        55.13847732543945,
+        54.95171356201172,
+        54.89215087890625
+      ],
+      "median_ms": 54.85047149658203,
+      "median_tflops": 3257.413011020949
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "source": "/home/leling/issue-investigations/1347/cache-20261029/5NZO3TQ7CY5Q5ADCD3INBJGYOLBJDKWOWF5Z6JE372TMZMLOX25Q/_gemm_afp4wfp4_kernel.llir",
+  "agpr": "0",
+  "flags": "",
+  "codegen_revision": "08b05a3352eeadd10eba4a25ffc19c2abb226448-2",
+  "inst_sha256": "f0b5b7afbe7c4c57e2905853d34498129bc96755d2a3ef3159e8e73389d3b3ec",
+  "inst_count": 1175,
+  "vgpr_count": 224,
+  "vgpr_spill_count": 0,
+  "sgpr_count": 53,
+  "sgpr_spill_count": 0,
+  "private_segment_fixed_size": 0,
+  "scratch_instructions": 0,
+  "accvgpr_instructions": 0
+}
