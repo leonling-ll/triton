@@ -117,3 +117,62 @@ module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 8 : i32, "ttg.thr
     tt.return
   }
 }
+
+// -----
+
+// Visit each 2x2 group of MFMA tiles before moving to the next group.
+// This keeps A/B operand reuse close even when C/D register-class pins and
+// the two-step pingpong barriers constrain backend scheduling.
+// CHECK-LABEL: mfma_scaled_2step_tiled_cd_regclass
+#linear = #ttg.linear<{register = [[0, 4], [16, 0], [64, 0], [128, 0]], lane = [[1, 0], [2, 0], [4, 0], [8, 0], [0, 1], [0, 2]], warp = [[0, 0], [0, 0], [32, 0]], block = []}>
+#linear1 = #ttg.linear<{register = [[0, 4], [16, 0], [128, 0]], lane = [[1, 0], [2, 0], [4, 0], [8, 0], [0, 1], [0, 2]], warp = [[32, 0], [64, 0], [0, 0]], block = []}>
+#mma = #ttg.amd_mfma<{version = 4, warpsPerCTA = [2, 4], instrShape = [16, 16, 128], isTransposed = true, tilesPerWarp = [2, 2]}>
+module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 8 : i32, "ttg.threads-per-warp" = 64 : i32} {
+  tt.func public @mfma_scaled_2step_tiled_cd_regclass(%arg0: tensor<256x128xi8, #ttg.dot_op<{opIdx = 0, parent = #mma, kWidth = 16}>>, %arg1: tensor<256x8xi8, #linear>, %arg2: tensor<128x256xi8, #ttg.dot_op<{opIdx = 1, parent = #mma, kWidth = 16}>>, %arg3: tensor<256x8xi8, #linear1>) {
+    // CHECK-NOT: llvm.inline_asm
+    // CHECK: %[[P1:.*]] = rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B0:[^,]+]], %[[A0:[^,]+]], {{.*}}, fp4_e2m1, fp4_e2m1, 0, %[[SB:[^,]+]], 0, %[[SA:[^ ]+]]
+    // CHECK-NEXT: llvm.inline_asm asm_dialect = att "", "=a,0" %[[P1]] : (vector<4xf32>) -> vector<4xf32>
+    // CHECK-NOT: rocdl.mfma
+    // CHECK: rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B1:[^,]+]], %[[A0]], {{.*}}, fp4_e2m1, fp4_e2m1, 1, %[[SB]], 0, %[[SA]]
+    // CHECK-NOT: rocdl.mfma
+    // CHECK: rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B0]], %[[A1:[^,]+]], {{.*}}, fp4_e2m1, fp4_e2m1, 0, %[[SB]], 1, %[[SA]]
+    // CHECK-NOT: rocdl.mfma
+    // CHECK: rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B1]], %[[A1]], {{.*}}, fp4_e2m1, fp4_e2m1, 1, %[[SB]], 1, %[[SA]]
+    // CHECK: rocdl.s.barrier
+    // CHECK: %[[C2:.*]] = llvm.inline_asm asm_dialect = att "", "=a,0" {{.*}} : (vector<4xf32>) -> vector<4xf32>
+    // CHECK-NEXT: %[[P2:.*]] = rocdl.mfma.scale.f32.16x16x128.f8f6f4 {{.*}}%[[C2]]
+    // CHECK-NEXT: llvm.inline_asm asm_dialect = att "", "=a,0" %[[P2]] : (vector<4xf32>) -> vector<4xf32>
+    %cst = arith.constant dense<0.000000e+00> : tensor<256x256xf32, #mma>
+    %dots = tt.dot_scaled %arg0 scale %arg1, %arg2 scale %arg3, %cst lhs = e2m1 rhs = e2m1 {amdg.cd_regclass = "a", fastMath = false, pingpong_2step} : tensor<256x128xi8, #ttg.dot_op<{opIdx = 0, parent = #mma, kWidth = 16}>>, tensor<256x8xi8, #linear> * tensor<128x256xi8, #ttg.dot_op<{opIdx = 1, parent = #mma, kWidth = 16}>>, tensor<256x8xi8, #linear1> -> tensor<256x256xf32, #mma>
+    tt.return
+  }
+}
+
+// -----
+
+// Ordinary dots, including a pipelined epilogue, retain K-first scale
+// packing and linear M/N traversal. The warp tile layout alone must not
+// enable the two-step pingpong schedule.
+// CHECK-LABEL: mfma_scaled_tiled_k_inner_cd_regclass
+#linear = #ttg.linear<{register = [[0, 4], [16, 0], [64, 0], [128, 0]], lane = [[1, 0], [2, 0], [4, 0], [8, 0], [0, 1], [0, 2]], warp = [[0, 0], [0, 0], [32, 0]], block = []}>
+#linear1 = #ttg.linear<{register = [[0, 4], [16, 0], [128, 0]], lane = [[1, 0], [2, 0], [4, 0], [8, 0], [0, 1], [0, 2]], warp = [[32, 0], [64, 0], [0, 0]], block = []}>
+#mma = #ttg.amd_mfma<{version = 4, warpsPerCTA = [2, 4], instrShape = [16, 16, 128], isTransposed = true, tilesPerWarp = [2, 2]}>
+module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 8 : i32, "ttg.threads-per-warp" = 64 : i32} {
+  tt.func public @mfma_scaled_tiled_k_inner_cd_regclass(%arg0: tensor<256x128xi8, #ttg.dot_op<{opIdx = 0, parent = #mma, kWidth = 16}>>, %arg1: tensor<256x8xi8, #linear>, %arg2: tensor<128x256xi8, #ttg.dot_op<{opIdx = 1, parent = #mma, kWidth = 16}>>, %arg3: tensor<256x8xi8, #linear1>) {
+    // K stays innermost. Both bytes for one (M, N) accumulator precede
+    // the next N tile; packing stays K-first even for tilesPerWarp=[2,2].
+    // CHECK: %[[P0:.*]] = rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B0:[^,]+]], %[[A0:[^,]+]], {{.*}}, fp4_e2m1, fp4_e2m1, 0, %[[SB0:[^,]+]], 0, %[[SA0:[^ ]+]]
+    // CHECK-NEXT: %[[P1:.*]] = rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B0K1:[^,]+]], %[[A0K1:[^,]+]], %[[P0]], fp4_e2m1, fp4_e2m1, 1, %[[SB0]], 1, %[[SA0]]
+    // CHECK-NEXT: llvm.inline_asm asm_dialect = att "", "=a,0" %[[P1]] : (vector<4xf32>) -> vector<4xf32>
+    // CHECK-NOT: rocdl.mfma
+    // CHECK: %[[P2:.*]] = rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B1:[^,]+]], %[[A0]], {{.*}}, fp4_e2m1, fp4_e2m1, 2, %[[SB0]], 0, %[[SA0]]
+    // CHECK-NEXT: %[[P3:.*]] = rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B1K1:[^,]+]], %[[A0K1]], %[[P2]], fp4_e2m1, fp4_e2m1, 3, %[[SB0]], 1, %[[SA0]]
+    // CHECK-NEXT: llvm.inline_asm asm_dialect = att "", "=a,0" %[[P3]] : (vector<4xf32>) -> vector<4xf32>
+    // CHECK-NOT: rocdl.mfma
+    // Visit N=2 with the same A operand, rather than advancing to M=1.
+    // CHECK: rocdl.mfma.scale.f32.16x16x128.f8f6f4 {{[^,]+}}, %[[A0]], {{.*}}, fp4_e2m1, fp4_e2m1, 0, {{[^,]+}}, 0, %[[SA0]]
+    %cst = arith.constant dense<0.000000e+00> : tensor<256x256xf32, #mma>
+    %dots = tt.dot_scaled %arg0 scale %arg1, %arg2 scale %arg3, %cst lhs = e2m1 rhs = e2m1 {amdg.cd_regclass = "a", fastMath = false} : tensor<256x128xi8, #ttg.dot_op<{opIdx = 0, parent = #mma, kWidth = 16}>>, tensor<256x8xi8, #linear> * tensor<128x256xi8, #ttg.dot_op<{opIdx = 1, parent = #mma, kWidth = 16}>>, tensor<256x8xi8, #linear1> -> tensor<256x256xf32, #mma>
+    tt.return
+  }
+}

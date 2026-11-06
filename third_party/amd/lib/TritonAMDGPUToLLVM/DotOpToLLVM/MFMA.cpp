@@ -531,7 +531,9 @@ struct DotOpMFMAConversionHelper {
   virtual ValueTable getValuesFromDotOperandLayoutStruct(
       Value value, int batch, int nonKRep, int kRepInKWidth, int kWidth,
       int kBase, RankedTensorType tensorType, Type type, bool allowXF32,
-      bool preserveBF16, bool isConstantScale = false) const {
+      bool preserveBF16, bool isConstantScale = false,
+      bool transposeScalePacking = false) const {
+    assert(!transposeScalePacking || (kBase == 4 && type.isInteger(8)));
     auto tb = TritonLLVMOpBuilder(loc, rewriter);
     auto elems = unpackTensorElements(loc, value, rewriter, tensorType);
     if (type.isF32() && allowXF32) {
@@ -565,8 +567,9 @@ struct DotOpMFMAConversionHelper {
           Value rawElems = tb.undef(ty);
           for (int k = 0; k < kBase; ++k) {
             auto index = linearize({b, nonK, kBaseVec, k}, strides);
-            rawElems =
-                tb.insert_element(ty, rawElems, elems[index], tb.i32_val(k));
+            int packedIndex = transposeScalePacking ? (k % 2) * 2 + k / 2 : k;
+            rawElems = tb.insert_element(ty, rawElems, elems[index],
+                                         tb.i32_val(packedIndex));
           }
 
           // Step 2: process rawElems based on element type
@@ -762,6 +765,17 @@ struct ScaledDotOpMFMAConversionHelper : DotOpMFMAConversionHelper {
     assert(scaleAKBase % akPackedVals == 0 && scaleBKBase % bkPackedVals == 0);
     int aNonKPackedVals = scaleAKBase / akPackedVals;
     int bNonKPackedVals = scaleBKBase / bkPackedVals;
+    auto tilesPerWarp = mfmaLayout.getTilesPerWarp();
+    // In two-step pingpong, preserve a 2x2 scale word's non-K-first order
+    // and select its bytes with opSel. Pair this with grouped M/N traversal
+    // in the K-outer schedule below. Ordinary K-inner dots, including the
+    // epilogue, retain K-first packing: changing it can hurt scheduling.
+    bool is2Step = op->hasAttr("pingpong_2step");
+    bool transposeScaleA = is2Step &&
+                           tilesPerWarp[tilesPerWarp.size() - 2] > 1 &&
+                           akPackedVals == 2 && aNonKPackedVals == 2;
+    bool transposeScaleB = is2Step && tilesPerWarp.back() > 1 &&
+                           bkPackedVals == 2 && bNonKPackedVals == 2;
 
     auto operandA = getValuesFromDotOperandLayoutStruct(
         loadedA, numRepB, numRepM, numRepK, aKWidth, aKBase, aTensorTy,
@@ -781,13 +795,13 @@ struct ScaledDotOpMFMAConversionHelper : DotOpMFMAConversionHelper {
       operandAScale = getValuesFromDotOperandLayoutStruct(
           loadedAScale, numRepB, numRepM, numRepK, scaleKWidth, scaleAKBase,
           aScaleTensorTy, aScaleTensorTy.getElementType(), allowXF32,
-          /*preserveBF16=*/false, isAScaleConstant);
+          /*preserveBF16=*/false, isAScaleConstant, transposeScaleA);
 
       auto bScaleTensorTy = cast<RankedTensorType>(bScale.getType());
       operandBScale = getValuesFromDotOperandLayoutStruct(
           loadedBScale, numRepB, numRepN, numRepK, scaleKWidth, scaleBKBase,
           bScaleTensorTy, bScaleTensorTy.getElementType(), allowXF32,
-          /*preserveBF16=*/false, isBScaleConstant);
+          /*preserveBF16=*/false, isBScaleConstant, transposeScaleB);
     }
 
     auto dstElemTy = dTensorTy.getElementType();
@@ -814,20 +828,33 @@ struct ScaledDotOpMFMAConversionHelper : DotOpMFMAConversionHelper {
     // first half of mfma, backend compiler is supposed to schedule it.
     int halfPoint = numVecInKBase * numRepB * numRepM * numRepN / 2;
     int currIter = 0;
-    bool is2Step = false;
     int innerK = 0, outerK = 0, innerKBound = 1, outerKBound = 1;
     // In order to split mfma by K, change the outermost loop iterates
     // over the K in emitting the mfma operations.
-    if (auto pingpongUnitAttr = op->getAttr("pingpong_2step")) {
-      is2Step = true;
+    if (is2Step)
       outerKBound = numVecInKBase;
-    } else
+    else
       innerKBound = numVecInKBase;
 
+    // Group M/N tiles only with the non-K-first scale packing above.
+    // Two-step pingpong keeps K outermost, with barriers between the halves.
+    // Ordinary dots keep linear M/N traversal and K innermost; grouping just
+    // because tilesPerWarp is nontrivial can regress their scheduling.
+    bool groupMNTiles = transposeScaleA || transposeScaleB;
+    int mTile =
+        groupMNTiles
+            ? std::min<int>(tilesPerWarp[tilesPerWarp.size() - 2], numRepM)
+            : 1;
+    int nTile = groupMNTiles ? std::min<int>(tilesPerWarp.back(), numRepN) : 1;
     for (outerK = 0; outerK < outerKBound; outerK++) {
       for (int b = 0; b < numRepB; ++b) {
-        for (int m = 0; m < numRepM; ++m) {
-          for (int n = 0; n < numRepN; ++n) {
+        for (int mi = 0; mi < numRepM; ++mi) {
+          for (int ni = 0; ni < numRepN; ++ni) {
+            int tileIndex = mi * numRepN + ni;
+            int m = tileIndex / (numRepN * mTile) * mTile +
+                    (tileIndex / nTile) % mTile;
+            int n = (tileIndex / (mTile * nTile)) % (numRepN / nTile) * nTile +
+                    tileIndex % nTile;
             // Insert pingpong cluster barrier when needed.
             if (is2Step && currIter++ == halfPoint) {
               ROCDL::SchedBarrier::create(rewriter, loc,
@@ -860,6 +887,10 @@ struct ScaledDotOpMFMAConversionHelper : DotOpMFMAConversionHelper {
                 int nScale = n / bNonKPackedVals;
                 opSelA = (m * numRepK + k) % (aNonKPackedVals * akPackedVals);
                 opSelB = (n * numRepK + k) % (bNonKPackedVals * bkPackedVals);
+                if (transposeScaleA)
+                  opSelA = (opSelA % 2) * 2 + opSelA / 2;
+                if (transposeScaleB)
+                  opSelB = (opSelB % 2) * 2 + opSelB / 2;
 
                 if (mfmaLayout.getIsTransposed()) {
                   acc = generateScaledMFMAOp(
