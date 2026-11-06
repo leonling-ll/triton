@@ -795,7 +795,14 @@ def _gemm_kernel_preshuffled_scales_cdna4(a_ptr, b_ptr, c_ptr, a_scales_ptr, b_s
 
 @pytest.mark.interpreter
 @pytest.mark.parametrize("M, N, K", [(1024, 1024, 1024)])
-@pytest.mark.parametrize("BLOCK_M, BLOCK_N, BLOCK_K", [(128, 128, 256), (64, 64, 512), [32, 32, 64]])
+@pytest.mark.parametrize("BLOCK_M, BLOCK_N, BLOCK_K, NUM_STAGES", [
+    (128, 128, 256, 1),
+    (64, 64, 512, 1),
+    (32, 32, 64, 1),
+    (256, 256, 256, 2),
+    (128, 256, 256, 1),
+    (256, 128, 256, 1),
+])
 @pytest.mark.parametrize("DTYPE_A, DTYPE_B, FAST_MATH", [("mxfp4", "mxfp4", False), ("fp16", "mxfp8e5", False),
                                                          ("mxfp8e4", "bf16", False), ("bf16", "mxfp4", True)])
 @pytest.mark.parametrize("mfma_nonkdim", [16, 32])
@@ -804,8 +811,10 @@ def _gemm_kernel_preshuffled_scales_cdna4(a_ptr, b_ptr, c_ptr, a_scales_ptr, b_s
                     reason="Compilation bug for GB200.")
 @pytest.mark.skipif(is_hip() and not (is_hip_cdna4() or is_hip_cdna5()),
                     reason="Scaled dot is not emulated on other archs yet.")
-def test_preshuffle_scale_mxfp_cdna4(M, N, K, BLOCK_M, BLOCK_N, BLOCK_K, DTYPE_A, DTYPE_B, FAST_MATH, mfma_nonkdim,
-                                     preshuffle, device):
+def test_preshuffle_scale_mxfp_cdna4(M, N, K, BLOCK_M, BLOCK_N, BLOCK_K, NUM_STAGES, DTYPE_A, DTYPE_B, FAST_MATH,
+                                     mfma_nonkdim, preshuffle, device):
+    if NUM_STAGES == 2 and (DTYPE_A != "mxfp4" or DTYPE_B != "mxfp4"):
+        pytest.skip("The 256x256 pingpong tile is sized for packed FP4 inputs")
     # For details about scale shuffling on AMD GPUs please take a look at documentation in 10-block-scaled-matmu.py.
     if preshuffle and (BLOCK_M < 32 or BLOCK_N < 32 or BLOCK_K < 256):
         pytest.skip("Minimal tile size for preshuffling is 32x32x256")
@@ -905,15 +914,51 @@ def test_preshuffle_scale_mxfp_cdna4(M, N, K, BLOCK_M, BLOCK_N, BLOCK_K, DTYPE_A
                                                     *w_scales_strides, dtype_to_triton_type[DTYPE_A],
                                                     dtype_to_triton_type[DTYPE_B], BLOCK_M, BLOCK_N, BLOCK_K,
                                                     mfma_nonkdim, preshuffle, fast_math=FAST_MATH, num_warps=8,
-                                                    num_stages=1, **kernel_kwargs)
+                                                    num_stages=NUM_STAGES, **kernel_kwargs)
     triton_out = triton_out.to(torch.float32)
     torch.testing.assert_close(torch_out, triton_out, atol=2e-5, rtol=1e-4)
     if is_hip_cdna4() and preshuffle and not is_compile_warmup():
         assert "ds_read_u8" not in k.asm["amdgcn"]
         if mfma_nonkdim == 16:
             assert "tilesPerWarp = [2, 2]" in k.asm["ttgir"]
+            if NUM_STAGES == 2:
+                assert "pingpong_2step" in k.asm["ttgir"]
         elif mfma_nonkdim == 32:  # default tilesPerWarp = [1, 1]
             assert "tilesPerWarp" not in k.asm["ttgir"]
+
+
+@pytest.mark.skipif(not is_hip_cdna4(), reason="Requires CDNA4 scaled MFMA pingpong")
+@pytest.mark.parametrize("K", [256, 512, 1024])
+@pytest.mark.parametrize("has_scale_a, has_scale_b", [(True, True), (True, False), (False, True), (False, False)])
+def test_mxfp4_pingpong_scale_packing(K, has_scale_a, has_scale_b, device):
+    # Distinct A/B values and a rectangular result exercise independent scale
+    # selectors, including the constant scale inserted for an unscaled operand.
+    torch.manual_seed(1347)
+    M, N = 512, 768
+
+    def make_operand(rows, has_scale):
+        values = MXFP4Tensor(size=(rows, K), device=device).random()
+        reference = values.to(torch.float32)
+        scales = None
+        if has_scale:
+            scales = torch.randint(124, 129, (rows, K // 32), dtype=torch.uint8, device=device)
+            reference *= fp8e8m0_to_float32(scales).repeat_interleave(32, dim=1)
+            scales = scales.view(rows // 32, 2, 16, K // 256, 2, 4, 1)
+            scales = scales.permute(0, 3, 5, 2, 4, 1, 6).contiguous().view(rows // 32, K)
+        return values.to_packed_tensor(dim=1), scales, reference
+
+    a, a_scale, a_ref = make_operand(M, has_scale_a)
+    b, b_scale, b_ref = make_operand(N, has_scale_b)
+    b = b.T
+    output = torch.empty((M, N), device=device, dtype=torch.float32)
+    a_scale_strides = a_scale.stride() if a_scale is not None else (None, None)
+    b_scale_strides = b_scale.stride() if b_scale is not None else (None, None)
+    _gemm_kernel_preshuffled_scales_cdna4[(triton.cdiv(M, 256) * triton.cdiv(N, 256),
+                                           1)](a, b, output, a_scale, b_scale, M, N, K, *a.stride(), *b.stride(),
+                                               *output.stride(), *a_scale_strides, *b_scale_strides, "e2m1", "e2m1",
+                                               256, 256, 256, 16, True, fast_math=False, num_warps=8, num_stages=2,
+                                               matrix_instr_nonkdim=16)
+    torch.testing.assert_close(output, a_ref @ b_ref.T, atol=2e-5, rtol=1e-4)
 
 
 @pytest.mark.interpreter
