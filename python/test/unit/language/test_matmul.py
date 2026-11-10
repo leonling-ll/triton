@@ -930,7 +930,8 @@ def test_preshuffle_scale_mxfp_cdna4(M, N, K, BLOCK_M, BLOCK_N, BLOCK_K, NUM_STA
 @pytest.mark.skipif(not is_hip_cdna4(), reason="Requires CDNA4 scaled MFMA pingpong")
 @pytest.mark.parametrize("K", [256, 512, 1024])
 @pytest.mark.parametrize("has_scale_a, has_scale_b", [(True, True), (True, False), (False, True), (False, False)])
-def test_mxfp4_pingpong_scale_packing(K, has_scale_a, has_scale_b, device):
+@pytest.mark.parametrize("scale_dtype", [torch.uint8, torch.float8_e8m0fnu], ids=["uint8", "e8m0"])
+def test_mxfp4_pingpong_scale_packing(K, has_scale_a, has_scale_b, scale_dtype, device):
     # Distinct A/B values and a rectangular result exercise independent scale
     # selectors, including the constant scale inserted for an unscaled operand.
     torch.manual_seed(1347)
@@ -945,6 +946,7 @@ def test_mxfp4_pingpong_scale_packing(K, has_scale_a, has_scale_b, device):
             reference *= fp8e8m0_to_float32(scales).repeat_interleave(32, dim=1)
             scales = scales.view(rows // 32, 2, 16, K // 256, 2, 4, 1)
             scales = scales.permute(0, 3, 5, 2, 4, 1, 6).contiguous().view(rows // 32, K)
+            scales = scales.view(scale_dtype)
         return values.to_packed_tensor(dim=1), scales, reference
 
     a, a_scale, a_ref = make_operand(M, has_scale_a)

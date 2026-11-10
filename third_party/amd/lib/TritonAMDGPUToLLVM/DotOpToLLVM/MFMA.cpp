@@ -484,7 +484,8 @@ struct DotOpMFMAConversionHelper {
       int kBase, RankedTensorType tensorType, Type type, bool allowXF32,
       bool preserveBF16, bool isConstantScale = false,
       bool transposeScalePacking = false) const {
-    assert(!transposeScalePacking || (kBase == 4 && type.isInteger(8)));
+    Type elemTy = typeConverter->convertType(type);
+    assert(!transposeScalePacking || (kBase == 4 && elemTy.isInteger(8)));
     auto tb = TritonLLVMOpBuilder(loc, rewriter);
     auto elems = unpackTensorElements(loc, value, rewriter, tensorType);
     if (type.isF32() && allowXF32) {
@@ -553,7 +554,6 @@ struct DotOpMFMAConversionHelper {
           // Step 1: construct each kBase-element vector by
           //         - extracting kBase elements from elems and
           //         - putting them into a kBase-element vector, i.e. rawElems
-          Type elemTy = typeConverter->convertType(type);
           Type ty = vec_ty(elemTy, kBase);
           Value rawElems = tb.undef(ty);
           for (int k = 0; k < kBase; ++k) {
