@@ -129,8 +129,16 @@ module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 8 : i32, "ttg.thr
 #mma = #ttg.amd_mfma<{version = 4, warpsPerCTA = [2, 4], instrShape = [16, 16, 128], isTransposed = true, tilesPerWarp = [2, 2]}>
 module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 8 : i32, "ttg.threads-per-warp" = 64 : i32} {
   tt.func public @mfma_scaled_2step_tiled_cd_regclass(%arg0: tensor<256x128xi8, #ttg.dot_op<{opIdx = 0, parent = #mma, kWidth = 16}>>, %arg1: tensor<256x8xi8, #linear>, %arg2: tensor<128x256xi8, #ttg.dot_op<{opIdx = 1, parent = #mma, kWidth = 16}>>, %arg3: tensor<256x8xi8, #linear1>) {
+    // Check the byte permutation itself and tie each permuted word to MFMA.
+    // A and B both change from [r0k0, r0k1, r1k0, r1k1] to
+    // [r0k0, r1k0, r0k1, r1k1]; r is M for A and N for B.
+    // CHECK: %[[A_BYTES:.*]] = llvm.shufflevector {{.*}} [0, 2, 1, 3] : vector<4xi8>
+    // CHECK-NEXT: %[[SA:.*]] = llvm.bitcast %[[A_BYTES]] : vector<4xi8> to i32
+    // CHECK: llvm.extractvalue %arg3[0]
+    // CHECK: %[[B_BYTES:.*]] = llvm.shufflevector {{.*}} [0, 2, 1, 3] : vector<4xi8>
+    // CHECK-NEXT: %[[SB:.*]] = llvm.bitcast %[[B_BYTES]] : vector<4xi8> to i32
     // CHECK-NOT: llvm.inline_asm
-    // CHECK: %[[P1:.*]] = rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B0:[^,]+]], %[[A0:[^,]+]], {{.*}}, fp4_e2m1, fp4_e2m1, 0, %[[SB:[^,]+]], 0, %[[SA:[^ ]+]]
+    // CHECK: %[[P1:.*]] = rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B0:[^,]+]], %[[A0:[^,]+]], {{.*}}, fp4_e2m1, fp4_e2m1, 0, %[[SB]], 0, %[[SA]]
     // CHECK-NEXT: llvm.inline_asm asm_dialect = att "", "=a,0" %[[P1]] : (vector<4xf32>) -> vector<4xf32>
     // CHECK-NOT: rocdl.mfma
     // CHECK: rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B1:[^,]+]], %[[A0]], {{.*}}, fp4_e2m1, fp4_e2m1, 1, %[[SB]], 0, %[[SA]]
@@ -140,8 +148,14 @@ module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 8 : i32, "ttg.thr
     // CHECK: rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B1]], %[[A1]], {{.*}}, fp4_e2m1, fp4_e2m1, 1, %[[SB]], 1, %[[SA]]
     // CHECK: rocdl.s.barrier
     // CHECK: %[[C2:.*]] = llvm.inline_asm asm_dialect = att "", "=a,0" {{.*}} : (vector<4xf32>) -> vector<4xf32>
-    // CHECK-NEXT: %[[P2:.*]] = rocdl.mfma.scale.f32.16x16x128.f8f6f4 {{.*}}%[[C2]]
+    // CHECK-NEXT: %[[P2:.*]] = rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B0K1:[^,]+]], %[[A0K1:[^,]+]], %[[C2]], fp4_e2m1, fp4_e2m1, 2, %[[SB]], 2, %[[SA]]
     // CHECK-NEXT: llvm.inline_asm asm_dialect = att "", "=a,0" %[[P2]] : (vector<4xf32>) -> vector<4xf32>
+    // CHECK-NOT: rocdl.mfma
+    // CHECK: rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B1K1:[^,]+]], %[[A0K1]], {{.*}}, fp4_e2m1, fp4_e2m1, 3, %[[SB]], 2, %[[SA]]
+    // CHECK-NOT: rocdl.mfma
+    // CHECK: rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B0K1]], %[[A1K1:[^,]+]], {{.*}}, fp4_e2m1, fp4_e2m1, 2, %[[SB]], 3, %[[SA]]
+    // CHECK-NOT: rocdl.mfma
+    // CHECK: rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B1K1]], %[[A1K1]], {{.*}}, fp4_e2m1, fp4_e2m1, 3, %[[SB]], 3, %[[SA]]
     %cst = arith.constant dense<0.000000e+00> : tensor<256x256xf32, #mma>
     %dots = tt.dot_scaled %arg0 scale %arg1, %arg2 scale %arg3, %cst lhs = e2m1 rhs = e2m1 {amdg.cd_regclass = "a", fastMath = false, pingpong_2step} : tensor<256x128xi8, #ttg.dot_op<{opIdx = 0, parent = #mma, kWidth = 16}>>, tensor<256x8xi8, #linear> * tensor<128x256xi8, #ttg.dot_op<{opIdx = 1, parent = #mma, kWidth = 16}>>, tensor<256x8xi8, #linear1> -> tensor<256x256xf32, #mma>
     tt.return
@@ -159,6 +173,7 @@ module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 8 : i32, "ttg.thr
 #mma = #ttg.amd_mfma<{version = 4, warpsPerCTA = [2, 4], instrShape = [16, 16, 128], isTransposed = true, tilesPerWarp = [2, 2]}>
 module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 8 : i32, "ttg.threads-per-warp" = 64 : i32} {
   tt.func public @mfma_scaled_tiled_k_inner_cd_regclass(%arg0: tensor<256x128xi8, #ttg.dot_op<{opIdx = 0, parent = #mma, kWidth = 16}>>, %arg1: tensor<256x8xi8, #linear>, %arg2: tensor<128x256xi8, #ttg.dot_op<{opIdx = 1, parent = #mma, kWidth = 16}>>, %arg3: tensor<256x8xi8, #linear1>) {
+    // CHECK-NOT: llvm.shufflevector
     // K stays innermost. Both bytes for one (M, N) accumulator precede
     // the next N tile; packing stays K-first even for tilesPerWarp=[2,2].
     // CHECK: %[[P0:.*]] = rocdl.mfma.scale.f32.16x16x128.f8f6f4 %[[B0:[^,]+]], %[[A0:[^,]+]], {{.*}}, fp4_e2m1, fp4_e2m1, 0, %[[SB0:[^,]+]], 0, %[[SA0:[^ ]+]]

@@ -813,6 +813,8 @@ def _gemm_kernel_preshuffled_scales_cdna4(a_ptr, b_ptr, c_ptr, a_scales_ptr, b_s
                     reason="Scaled dot is not emulated on other archs yet.")
 def test_preshuffle_scale_mxfp_cdna4(M, N, K, BLOCK_M, BLOCK_N, BLOCK_K, NUM_STAGES, DTYPE_A, DTYPE_B, FAST_MATH,
                                      mfma_nonkdim, preshuffle, device):
+    if max(BLOCK_M, BLOCK_N) == 256 and not is_hip_cdna4():
+        pytest.skip("Large tiles cover CDNA4 scale packing and scheduling")
     if NUM_STAGES == 2 and (DTYPE_A != "mxfp4" or DTYPE_B != "mxfp4"):
         pytest.skip("The 256x256 pingpong tile is sized for packed FP4 inputs")
     # For details about scale shuffling on AMD GPUs please take a look at documentation in 10-block-scaled-matmu.py.
@@ -955,11 +957,15 @@ def test_mxfp4_pingpong_scale_packing(K, has_scale_a, has_scale_b, scale_dtype, 
     output = torch.empty((M, N), device=device, dtype=torch.float32)
     a_scale_strides = a_scale.stride() if a_scale is not None else (None, None)
     b_scale_strides = b_scale.stride() if b_scale is not None else (None, None)
-    _gemm_kernel_preshuffled_scales_cdna4[(triton.cdiv(M, 256) * triton.cdiv(N, 256),
-                                           1)](a, b, output, a_scale, b_scale, M, N, K, *a.stride(), *b.stride(),
-                                               *output.stride(), *a_scale_strides, *b_scale_strides, "e2m1", "e2m1",
-                                               256, 256, 256, 16, True, fast_math=False, num_warps=8, num_stages=2,
-                                               matrix_instr_nonkdim=16)
+    k = _gemm_kernel_preshuffled_scales_cdna4[(triton.cdiv(M, 256) * triton.cdiv(N, 256),
+                                               1)](a, b, output, a_scale, b_scale, M, N, K, *a.stride(), *b.stride(),
+                                                   *output.stride(), *a_scale_strides, *b_scale_strides, "e2m1", "e2m1",
+                                                   256, 256, 256, 16, True, fast_math=False, num_warps=8, num_stages=2,
+                                                   matrix_instr_nonkdim=16)
+    if not is_compile_warmup():
+        assert "pingpong_2step" in k.asm["ttgir"]
+        if has_scale_a or has_scale_b:
+            assert "tilesPerWarp = [2, 2]" in k.asm["ttgir"]
     torch.testing.assert_close(output, a_ref @ b_ref.T, atol=2e-5, rtol=1e-4)
 
 
